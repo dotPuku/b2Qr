@@ -14,9 +14,6 @@ export default function CodeInputSection({
           <Edit3 className="w-4 h-4 text-[#00e676]" />
           <span>Total Code (Editable) &amp; Generator</span>
         </div>
-        <div className="text-xs text-zinc-400 hidden sm:block">
-          <span className="font-mono text-zinc-300">PREFIX-######</span>
-        </div>
       </div>
 
       <div className="relative mb-4">
