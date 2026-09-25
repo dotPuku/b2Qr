@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Tag, Plus, Trash2, Check, Sparkles, MoreVertical, Pencil } from 'lucide-react';
 import { formatPrefix, parsePrefixList } from '../utils/qrUtils';
 
+const ACCESS_KEY = 'B2QR';
+
 export default function PrefixManager({
   prefixes,
   activePrefix,
@@ -10,7 +12,6 @@ export default function PrefixManager({
   onEditPrefix,
   onDeletePrefix,
   onPrefixInputChange,
-  accessKey
 }) {
   const [newPrefixInput, setNewPrefixInput] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -23,7 +24,7 @@ export default function PrefixManager({
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [accessKey, setAccessKey] = useState(() => {
     try {
-      return localStorage.getItem('accessKey') || '';
+      return localStorage.getItem('access_key') || '';
     } catch {
       return '';
     }
@@ -32,7 +33,7 @@ export default function PrefixManager({
   const [showAccessKeyValue, setShowAccessKeyValue] = useState(false);
   const [accessKeyError, setAccessKeyError] = useState('');
 
-  const accessGranted = String(accessKey || '').trim() === accessKey;
+  const accessGranted = String(accessKey || '').trim() === ACCESS_KEY;
 
   const saveAccessKey = () => {
     const trimmed = String(accessKey || '').trim();
@@ -42,13 +43,13 @@ export default function PrefixManager({
       return;
     }
 
-    if (trimmed !== accessKey) {
+    if (trimmed !== ACCESS_KEY) {
       setAccessKeyError('Access key is invalid.');
       return;
     }
 
     try {
-      localStorage.setItem('accessKey', trimmed);
+      localStorage.setItem('access_key', trimmed);
     } catch (error) {
       console.error('Failed to save access key', error);
     }
@@ -60,7 +61,7 @@ export default function PrefixManager({
 
   const clearSavedAccessKey = () => {
     try {
-      localStorage.removeItem('accessKey');
+      localStorage.removeItem('access_key');
     } catch (error) {
       console.error('Failed to clear access key', error);
     }
