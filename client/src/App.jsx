@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import PrefixManager from './components/PrefixManager';
-import SuffixConfig from './components/SuffixConfig';
 import CodeInputSection from './components/CodeInputSection';
 import QRCodeCard from './components/QRCodeCard';
 import RecentHistory from './components/RecentHistory';
 import Toast from './components/Toast';
 import {
-  generateRandomDigits,
+  buildGeneratedCode,
   formatPrefix,
 } from './utils/qrUtils';
 
@@ -40,8 +39,7 @@ export default function App() {
     fetchPrefixes();
   }, []);
 
-  const [activePrefix, setActivePrefix] = useState();
-  const [digitCount, setDigitCount] = useState(10);
+  const [activePrefix, setActivePrefix] = useState('');
   const [fullText, setFullText] = useState('');
   const [history, setHistory] = useState([]);
   const [hasCopied, setHasCopied] = useState(false);
@@ -94,7 +92,7 @@ export default function App() {
 
         const firstAddedPrefix = savedPrefixes[0]?.prefix || cleanPrefixes[0];
         setActivePrefix(firstAddedPrefix);
-        generateNewCode(firstAddedPrefix, digitCount, true);
+        generateNewCode(firstAddedPrefix, true);
 
         setToast({
           type: "success",
@@ -129,10 +127,9 @@ export default function App() {
   }, []);
 
   const generateNewCode = useCallback(
-    (prefixToUse = activePrefix, digitsToUse = digitCount, notify = true) => {
+    (prefixToUse = activePrefix, notify = true) => {
       const prefix = formatPrefix(prefixToUse || 'CODE').trim();
-      const randomSuffix = generateRandomDigits(digitsToUse);
-      const combined = `${prefix}-${randomSuffix}`;
+      const combined = buildGeneratedCode(prefix);
 
       setFullText(combined);
       addToHistory(combined);
@@ -145,13 +142,13 @@ export default function App() {
       }
       return combined;
     },
-    [activePrefix, digitCount, addToHistory]
+    [activePrefix, addToHistory]
   );
 
   const handleSelectPrefix = (prefix) => {
     const cleanPrefix = formatPrefix(prefix);
     setActivePrefix(cleanPrefix);
-    generateNewCode(cleanPrefix, digitCount, true);
+    generateNewCode(cleanPrefix, true);
   };
 
   const handleDeletePrefix = async (prefixToDelete) => {
@@ -182,7 +179,7 @@ export default function App() {
           setActivePrefix(nextActive);
 
           if (nextActive) {
-            generateNewCode(nextActive, digitCount, false);
+            generateNewCode(nextActive, false);
           } else {
             setFullText("");
           }
@@ -208,11 +205,6 @@ export default function App() {
     }
   };
 
-  const handleDigitCountChange = (newCount) => {
-    setDigitCount(newCount);
-    generateNewCode(activePrefix, newCount, true);
-  };
-
   const handleCopyText = async () => {
     if (!fullText) return;
     try {
@@ -236,13 +228,6 @@ export default function App() {
     const upper = code.toUpperCase();
     setFullText(upper);
 
-    if (upper.includes('-')) {
-      const extractedPrefix = upper.split('-')[0];
-      if (extractedPrefix) {
-        setActivePrefix(extractedPrefix);
-      }
-    }
-
     setToast({
       type: 'info',
       message: `Loaded from history: ${upper}`
@@ -263,17 +248,13 @@ export default function App() {
               onDeletePrefix={handleDeletePrefix}
               onPrefixInputChange={(newVal) => setActivePrefix(formatPrefix(newVal))}
             />
-            <SuffixConfig
-              digitCount={digitCount}
-              onDigitCountChange={handleDigitCountChange}
-            />
             <CodeInputSection
               fullText={fullText}
               onFullTextChange={(val) => {
                 setFullText(val);
                 addToHistory(val);
               }}
-              onGenerateNew={() => generateNewCode(activePrefix, digitCount, true)}
+              onGenerateNew={() => generateNewCode(activePrefix, true)}
               onCopyText={handleCopyText}
               hasCopied={hasCopied}
             />
