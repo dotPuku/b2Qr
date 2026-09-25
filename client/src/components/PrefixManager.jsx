@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Tag, Plus, Trash2, Check, Sparkles, MoreVertical, Pencil } from 'lucide-react';
 import { formatPrefix, parsePrefixList } from '../utils/qrUtils';
 
+const ENV_ACCESS_KEY = (import.meta.env.VITE_ACCESS_KEY || '').trim();
+
 export default function PrefixManager({
   prefixes,
   activePrefix,
@@ -20,6 +22,9 @@ export default function PrefixManager({
   const [editError, setEditError] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [menuAnchor, setMenuAnchor] = useState(null);
+  const [accessKey, setAccessKey] = useState('');
+
+  const accessGranted = Boolean(ENV_ACCESS_KEY) && accessKey.trim() === ENV_ACCESS_KEY;
 
   const closeMenu = () => {
     setMenuOpenId(null);
@@ -43,6 +48,12 @@ export default function PrefixManager({
 
   const handleAddNew = (e) => {
     e.preventDefault();
+
+    if (!accessGranted) {
+      setErrorMsg('Access key does not match the configured .env value.');
+      return;
+    }
+
     const parsedPrefixes = parsePrefixList(newPrefixInput);
 
     if (parsedPrefixes.length === 0) {
@@ -59,7 +70,7 @@ export default function PrefixManager({
       return;
     }
 
-    onAddPrefix(parsedPrefixes);
+    onAddPrefix(parsedPrefixes, accessKey);
     setNewPrefixInput('');
     setErrorMsg('');
     setShowAddForm(false);
@@ -67,6 +78,12 @@ export default function PrefixManager({
 
   const handleEditSave = async (e) => {
     e.preventDefault();
+
+    if (!accessGranted) {
+      setEditError('Access key does not match the configured .env value.');
+      return;
+    }
+
     const cleanValue = formatPrefix(editDraft);
 
     if (!cleanValue) {
@@ -83,7 +100,7 @@ export default function PrefixManager({
       return;
     }
 
-    const saved = await onEditPrefix(editId, cleanValue);
+    const saved = await onEditPrefix(editId, cleanValue, accessKey);
     if (saved) {
       setEditId(null);
       setEditDraft('');
@@ -119,6 +136,39 @@ export default function PrefixManager({
           />
           <span>{showAddForm ? 'Cancel' : 'Add Custom Prefix'}</span>
         </button>
+      </div>
+
+      <div className="mb-5 p-4 rounded-xl border border-zinc-700 bg-zinc-900/80">
+        <label className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-400 mb-2">
+          Access Key
+        </label>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <input
+            type="password"
+            value={accessKey}
+            onChange={(e) => {
+              setAccessKey(e.target.value);
+              setErrorMsg('');
+            }}
+            placeholder="Enter access key"
+            className="flex-1 bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#00e676] focus:ring-1 focus:ring-[#00e676]"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              setAccessKey('');
+              setErrorMsg('Access key cleared.');
+            }}
+            className="px-3 py-2 bg-rose-500/15 text-rose-300 border border-rose-400/30 text-sm font-semibold rounded-lg hover:bg-rose-500/20"
+          >
+            Clear
+          </button>
+        </div>
+        {!accessGranted && (
+          <p className="text-[11px] text-amber-300 mt-2">
+            Use the same value as VITE_ACCESS_KEY in your .env file to unlock prefix management.
+          </p>
+        )}
       </div>
 
       {showAddForm && (
@@ -353,7 +403,13 @@ export default function PrefixManager({
                   <div className="absolute right-1.5 top-1/2 -translate-y-1/2 z-20">
                     <button
                       type="button"
-                      onClick={(e) => openMenuForPrefix(e, prefix)}
+                      onClick={(e) => {
+                        if (!accessGranted) {
+                          setErrorMsg('Access key does not match the configured .env value.');
+                          return;
+                        }
+                        openMenuForPrefix(e, prefix);
+                      }}
                       className={`p-2 sm:p-1.5 rounded-md transition-all cursor-pointer ${isSelected
                         ? 'text-zinc-900/70 hover:text-zinc-950 hover:bg-black/10'
                         : 'text-zinc-400 hover:text-white hover:bg-zinc-900/80'}
