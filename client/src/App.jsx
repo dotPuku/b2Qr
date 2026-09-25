@@ -6,7 +6,8 @@ import RecentHistory from './components/RecentHistory';
 import Toast from './components/Toast';
 import {
   buildGeneratedCode,
-  formatPrefix,
+  formatCode,
+  formatName,
 } from './utils/qrUtils';
 
 const ACCESS_KEY = 'ATANU04@#';
@@ -32,7 +33,12 @@ export default function App() {
       const data = await response.json();
 
       if (data.success) {
-        setPrefixes(data.prefixes || []);
+        const normalizedPrefixes = (data.prefixes || []).map((item) => ({
+          ...item,
+          name: formatName(item.name ?? item.prefixName ?? item.prefix ?? item.code),
+          code: formatCode(item.code ?? item.prefix ?? item.name ?? ''),
+        }));
+        setPrefixes(normalizedPrefixes);
       }
     } catch (error) {
       setToast({
@@ -61,71 +67,68 @@ export default function App() {
       return;
     }
 
-    const rawValues = Array.isArray(newPrefix)
-      ? newPrefix
-      : String(newPrefix).split(',');
+    const name = formatName(newPrefix?.name ?? '');
+    const code = formatCode(newPrefix?.code ?? '');
 
-    const cleanPrefixes = [...new Set(
-      rawValues
-        .map((item) => formatPrefix(item))
-        .map((item) => item.replace(/\s+/g, ''))
-        .filter(Boolean)
-    )];
-
-    if (!cleanPrefixes.length) {
+    if (!name || !code) {
       setToast({
-        type: "error",
-        message: "Please enter at least one valid prefix",
+        type: 'error',
+        message: 'Please enter a valid prefix name and code',
       });
       return;
     }
 
     try {
       const response = await fetch(SERVER_URL, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prefix: cleanPrefixes,
+          name,
+          code,
         }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        const savedPrefixes = Array.isArray(data.prefixes) ? data.prefixes : [data.prefix].filter(Boolean);
-        const mergedPrefixes = [...prefixes];
+        const savedPrefix = {
+          ...data.prefix,
+          name: formatName(data.prefix?.name ?? name),
+          code: formatCode(data.prefix?.code ?? code),
+        };
 
-        savedPrefixes.forEach((item) => {
-          if (!mergedPrefixes.some((existing) => existing.prefix === item.prefix)) {
-            mergedPrefixes.push(item);
+        setPrefixes((prev) => {
+          const next = [...prev];
+          const index = next.findIndex((item) => item._id === savedPrefix._id);
+
+          if (index >= 0) {
+            next[index] = savedPrefix;
+          } else {
+            next.push(savedPrefix);
           }
+
+          return next;
         });
 
-        setPrefixes(mergedPrefixes);
-
-        const firstAddedPrefix = savedPrefixes[0]?.prefix || cleanPrefixes[0];
-        setActivePrefix(firstAddedPrefix);
-        generateNewCode(firstAddedPrefix, true);
+        setActivePrefix(savedPrefix.code);
+        generateNewCode(savedPrefix.code, true);
 
         setToast({
-          type: "success",
-          message:
-            savedPrefixes.length > 1
-              ? `Added ${savedPrefixes.length} prefixes successfully!`
-              : `Prefix "${firstAddedPrefix}" added and selected!`,
+          type: 'success',
+          message: `Prefix "${savedPrefix.name}" added and selected!`,
         });
       } else {
         setToast({
-          type: "error",
-          message: data.message || "Failed to add prefix",
+          type: 'error',
+          message: data.message || 'Failed to add prefix',
         });
       }
     } catch (error) {
       setToast({
-        type: "error",
-        message: "Could not connect to server",
+        type: 'error',
+        message: 'Could not connect to server',
       });
     }
   };
@@ -141,7 +144,7 @@ export default function App() {
 
   const generateNewCode = useCallback(
     (prefixToUse = activePrefix, notify = true) => {
-      const prefix = formatPrefix(prefixToUse || 'CODE').trim();
+      const prefix = formatCode(prefixToUse || 'CODE').trim();
       const combined = buildGeneratedCode(prefix);
 
       setFullText(combined);
@@ -159,12 +162,12 @@ export default function App() {
   );
 
   const handleSelectPrefix = (prefix) => {
-    const cleanPrefix = formatPrefix(prefix);
+    const cleanPrefix = formatCode(prefix);
     setActivePrefix(cleanPrefix);
     generateNewCode(cleanPrefix, true);
   };
 
-  const handleEditPrefix = async (prefixId, newPrefixValue, accessKey) => {
+  const handleEditPrefix = async (prefixId, newCodeValue, newNameValue, accessKey) => {
     if (!isAccessKeyValid(accessKey)) {
       setToast({
         type: 'error',
@@ -173,24 +176,25 @@ export default function App() {
       return false;
     }
 
-    const normalized = formatPrefix(newPrefixValue);
+    const normalizedCode = formatCode(newCodeValue);
+    const normalizedName = formatName(newNameValue);
 
-    if (!normalized) {
+    if (!normalizedCode || !normalizedName) {
       setToast({
-        type: "error",
-        message: "Please enter a valid prefix",
+        type: 'error',
+        message: 'Please enter both a valid prefix name and code',
       });
       return false;
     }
 
     const duplicate = prefixes.some(
-      (item) => item._id !== prefixId && item.prefix === normalized
+      (item) => item._id !== prefixId && (item.code === normalizedCode || item.name === normalizedName)
     );
 
     if (duplicate) {
       setToast({
-        type: "error",
-        message: `Prefix "${normalized}" already exists`,
+        type: 'error',
+        message: `Prefix "${normalizedName}" or code "${normalizedCode}" already exists`,
       });
       return false;
     }
@@ -203,7 +207,8 @@ export default function App() {
         },
         body: JSON.stringify({
           id: prefixId,
-          newPrefix: normalized,
+          newCode: normalizedCode,
+          newName: normalizedName,
           accessKey,
         }),
       });
@@ -211,35 +216,35 @@ export default function App() {
       const data = await response.json();
 
       if (data.success) {
-        const oldValue = prefixes.find((item) => item._id === prefixId)?.prefix;
+        const oldValue = prefixes.find((item) => item._id === prefixId)?.code;
 
         setPrefixes((prev) =>
           prev.map((item) =>
-            item._id === prefixId ? { ...item, prefix: normalized } : item
+            item._id === prefixId ? { ...item, code: normalizedCode, name: normalizedName } : item
           )
         );
 
         if (activePrefix === oldValue) {
-          setActivePrefix(normalized);
-          generateNewCode(normalized, true);
+          setActivePrefix(normalizedCode);
+          generateNewCode(normalizedCode, true);
         }
 
         setToast({
-          type: "success",
-          message: `Prefix updated to "${normalized}"`,
+          type: 'success',
+          message: `Prefix updated to "${normalizedName} - ${normalizedCode}"`,
         });
         return true;
       }
 
       setToast({
-        type: "error",
-        message: data.message || "Failed to update prefix",
+        type: 'error',
+        message: data.message || 'Failed to update prefix',
       });
       return false;
     } catch (error) {
       setToast({
-        type: "error",
-        message: "Could not update prefix",
+        type: 'error',
+        message: 'Could not update prefix',
       });
       return false;
     }
@@ -274,8 +279,8 @@ export default function App() {
 
         setPrefixes(nextPrefixes);
 
-        if (activePrefix === prefixToDelete.prefix) {
-          const nextActive = nextPrefixes[0]?.prefix || "";
+        if (activePrefix === prefixToDelete.code) {
+          const nextActive = nextPrefixes[0]?.code || "";
 
           setActivePrefix(nextActive);
 
@@ -287,8 +292,8 @@ export default function App() {
         }
 
         setToast({
-          type: "info",
-          message: `Prefix "${prefixToDelete.prefix}" deleted`,
+          type: 'info',
+          message: `Prefix "${prefixToDelete.name || prefixToDelete.code}" deleted`,
         });
       } else {
         setToast({
@@ -345,7 +350,7 @@ export default function App() {
               onAddPrefix={handleAddPrefix}
               onEditPrefix={handleEditPrefix}
               onDeletePrefix={handleDeletePrefix}
-              onPrefixInputChange={(newVal) => setActivePrefix(formatPrefix(newVal))}
+              onPrefixInputChange={(newVal) => setActivePrefix(formatCode(newVal))}
             />
             <CodeInputSection
               fullText={fullText}

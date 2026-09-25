@@ -1,6 +1,11 @@
-import Prefix from "./prefix.model.js";
+import Prefix from './prefix.model.js';
 
-const normalizePrefix = (value) => {
+const normalizeName = (value) => {
+    if (!value && value !== 0) return '';
+    return String(value).trim().toUpperCase();
+};
+
+const normalizeCode = (value) => {
     if (!value && value !== 0) return '';
     return String(value)
         .trim()
@@ -9,67 +14,75 @@ const normalizePrefix = (value) => {
         .replace(/\s+/g, '');
 };
 
+const normalizeEntry = (entry) => {
+    if (!entry || typeof entry !== 'object') {
+        return null;
+    }
+
+    const name = normalizeName(entry.name ?? entry.prefixName ?? entry.prefix ?? entry.code);
+    const code = normalizeCode(entry.code ?? entry.prefix ?? entry.value ?? '');
+
+    if (!name || !code) {
+        return null;
+    }
+
+    return { name, code };
+};
+
 export const getPrefix = async (req, res) => {
     try {
         const prefixes = await Prefix.find();
 
         res.status(200).json({
             success: true,
-            prefixes
+            prefixes: prefixes.map((item) => ({
+                ...item.toObject(),
+                name: normalizeName(item.name ?? item.prefix ?? item.code),
+                code: normalizeCode(item.code ?? item.prefix ?? item.name),
+            })),
         });
     } catch (error) {
-        console.error("Error fetching prefixes:", error);
+        console.error('Error fetching prefixes:', error);
 
         res.status(500).json({
             success: false,
-            message: "Server Error: Could not fetch data.",
-            error: error.message
+            message: 'Server Error: Could not fetch data.',
+            error: error.message,
         });
     }
 };
 
 export const addPrefix = async (req, res) => {
     try {
-        const { prefix } = req.body;
-        const prefixList = Array.isArray(prefix)
-            ? prefix
-            : String(prefix || '')
-                .split(',')
-                .map((item) => normalizePrefix(item));
+        const entry = normalizeEntry(req.body);
 
-        const cleanedList = [...new Set(
-            prefixList
-                .map((item) => normalizePrefix(item))
-                .filter(Boolean)
-        )];
-
-        if (!cleanedList.length) {
+        if (!entry) {
             return res.status(400).json({
                 success: false,
-                message: 'Please provide at least one valid prefix',
+                message: 'Please provide a valid prefix name and code',
             });
         }
 
-        const existing = await Prefix.find({ prefix: { $in: cleanedList } });
-        const existingSet = new Set(existing.map((item) => item.prefix));
-        const newValues = cleanedList.filter((item) => !existingSet.has(item));
+        const existing = await Prefix.findOne({
+            $or: [
+                { name: entry.name },
+                { code: entry.code },
+            ],
+        });
 
-        if (!newValues.length) {
+        if (existing) {
             return res.status(409).json({
                 success: false,
-                message: 'All prefixes already exist',
+                message: 'This prefix name or code already exists',
             });
         }
 
-        const created = await Prefix.insertMany(
-            newValues.map((value) => ({ prefix: value }))
-        );
+        const created = await Prefix.create(entry);
 
         return res.status(201).json({
             success: true,
-            message: created.length > 1 ? 'Prefixes added successfully!' : 'Prefix Added successfully!',
-            prefixes: created,
-            prefix: created[0],
+            message: 'Prefix added successfully!',
+            prefix: created,
         });
     } catch (error) {
         console.error('Error saving prefix:', error);
@@ -77,14 +90,14 @@ export const addPrefix = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to add prefix',
-            error: error.message
+            error: error.message,
         });
     }
 };
 
 export const updatePrefix = async (req, res) => {
     try {
-        const { id, newPrefix, accessKey } = req.body;
+        const { id, newCode, newName, code, name, newPrefix, accessKey } = req.body;
         const expectedAccessKey = process.env.ACCESS_KEY || 'ATANU04@#';
 
         if (accessKey && String(accessKey).trim() !== expectedAccessKey) {
@@ -101,30 +114,34 @@ export const updatePrefix = async (req, res) => {
             });
         }
 
-        const normalized = normalizePrefix(newPrefix);
+        const normalizedCode = normalizeCode(newCode ?? code ?? newPrefix ?? '');
+        const normalizedName = normalizeName(newName ?? name ?? '');
 
-        if (!normalized) {
+        if (!normalizedCode || !normalizedName) {
             return res.status(400).json({
                 success: false,
-                message: 'Please provide a valid prefix value',
+                message: 'Please provide a valid prefix name and code',
             });
         }
 
         const duplicate = await Prefix.findOne({
-            prefix: normalized,
+            $or: [
+                { code: normalizedCode },
+                { name: normalizedName },
+            ],
             _id: { $ne: id },
         });
 
         if (duplicate) {
             return res.status(409).json({
                 success: false,
-                message: 'This prefix already exists',
+                message: 'This prefix name or code already exists',
             });
         }
 
         const updated = await Prefix.findByIdAndUpdate(
             id,
-            { prefix: normalized },
+            { code: normalizedCode, name: normalizedName },
             { new: true }
         );
 
@@ -167,7 +184,7 @@ export const deletePrefix = async (req, res) => {
         if (!deletedPrefix) {
             return res.status(404).json({
                 success: false,
-                message: 'Prefix not found'
+                message: 'Prefix not found',
             });
         }
 
@@ -181,7 +198,7 @@ export const deletePrefix = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to delete prefix',
-            error: error.message
+            error: error.message,
         });
     }
 };

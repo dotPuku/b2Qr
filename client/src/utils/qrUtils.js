@@ -21,13 +21,21 @@ export function generateRandomLetters(count) {
   return result;
 }
 
-export function formatPrefix(str) {
-  if (!str) return '';
-  return String(str).toUpperCase().trim();
+export function formatName(str) {
+  if (!str && str !== 0) return '';
+  return String(str).trim().toUpperCase();
+}
+
+export function formatCode(str) {
+  if (!str && str !== 0) return '';
+  return String(str)
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, '');
 }
 
 export function buildGeneratedCode(prefixValue) {
-  const prefix = formatPrefix(prefixValue || 'CODE').trim();
+  const prefix = formatCode(prefixValue || 'CODE').trim();
 
   if (!prefix) {
     return '';
@@ -62,14 +70,3 @@ export function buildGeneratedCode(prefixValue) {
   return result;
 }
 
-export function parsePrefixList(input) {
-  if (!input && input !== 0) return [];
-
-  const values = String(input)
-    .split(',')
-    .map((item) => formatPrefix(item))
-    .map((item) => item.replace(/\s+/g, ''))
-    .filter(Boolean);
-
-  return [...new Set(values)];
-}

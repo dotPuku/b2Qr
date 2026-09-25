@@ -12,7 +12,7 @@ import {
   Eye,
   EyeOff,
 } from 'lucide-react';
-import { formatPrefix, parsePrefixList } from '../utils/qrUtils';
+import { formatCode, formatName } from '../utils/qrUtils';
 
 const ACCESS_KEY = 'ATANU04@#';
 
@@ -25,12 +25,14 @@ export default function PrefixManager({
   onDeletePrefix,
   onPrefixInputChange,
 }) {
-  const [newPrefixInput, setNewPrefixInput] = useState('');
+  const [newPrefixNameInput, setNewPrefixNameInput] = useState('');
+  const [newPrefixCodeInput, setNewPrefixCodeInput] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [menuOpenId, setMenuOpenId] = useState(null);
   const [editId, setEditId] = useState(null);
-  const [editDraft, setEditDraft] = useState('');
+  const [editNameDraft, setEditNameDraft] = useState('');
+  const [editCodeDraft, setEditCodeDraft] = useState('');
   const [editError, setEditError] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [menuAnchor, setMenuAnchor] = useState(null);
@@ -61,7 +63,8 @@ export default function PrefixManager({
       setMenuOpenId(null);
       setMenuAnchor(null);
       setEditId(null);
-      setEditDraft('');
+      setEditNameDraft('');
+      setEditCodeDraft('');
       setEditError('');
       setDeleteTarget(null);
     }
@@ -146,24 +149,31 @@ export default function PrefixManager({
       return;
     }
 
-    const parsedPrefixes = parsePrefixList(newPrefixInput);
+    const name = formatName(newPrefixNameInput);
+    const code = formatCode(newPrefixCodeInput);
 
-    if (parsedPrefixes.length === 0) {
-      setErrorMsg('Please enter at least one prefix (e.g. PCM, PBHM)');
+    if (!name) {
+      setErrorMsg('Please enter the prefix name first.');
       return;
     }
 
-    const existingMatches = parsedPrefixes.filter((prefix) =>
-      prefixes.some((item) => item.prefix === prefix)
+    if (!code) {
+      setErrorMsg('Please enter the prefix code.');
+      return;
+    }
+
+    const existingMatch = prefixes.some(
+      (item) => item.name === name || item.code === code
     );
 
-    if (existingMatches.length > 0) {
-      setErrorMsg(`These prefixes already exist: ${existingMatches.join(', ')}`);
+    if (existingMatch) {
+      setErrorMsg(`This prefix name or code already exists: ${name} / ${code}`);
       return;
     }
 
-    onAddPrefix(parsedPrefixes, activeAccessKey);
-    setNewPrefixInput('');
+    onAddPrefix({ name, code }, activeAccessKey);
+    setNewPrefixNameInput('');
+    setNewPrefixCodeInput('');
     setErrorMsg('');
     setShowAddForm(false);
   };
@@ -176,26 +186,33 @@ export default function PrefixManager({
       return;
     }
 
-    const cleanValue = formatPrefix(editDraft);
+    const cleanName = formatName(editNameDraft);
+    const cleanCode = formatCode(editCodeDraft);
 
-    if (!cleanValue) {
-      setEditError('Please enter a valid prefix');
+    if (!cleanName) {
+      setEditError('Please enter a valid prefix name');
+      return;
+    }
+
+    if (!cleanCode) {
+      setEditError('Please enter a valid prefix code');
       return;
     }
 
     const duplicate = prefixes.some(
-      (item) => item._id !== editId && item.prefix === cleanValue
+      (item) => item._id !== editId && (item.name === cleanName || item.code === cleanCode)
     );
 
     if (duplicate) {
-      setEditError(`"${cleanValue}" already exists`);
+      setEditError(`"${cleanName}" or "${cleanCode}" already exists`);
       return;
     }
 
-    const saved = await onEditPrefix(editId, cleanValue, activeAccessKey);
+    const saved = await onEditPrefix(editId, cleanCode, cleanName, activeAccessKey);
     if (saved) {
       setEditId(null);
-      setEditDraft('');
+      setEditNameDraft('');
+      setEditCodeDraft('');
       setEditError('');
       setMenuOpenId(null);
     }
@@ -313,18 +330,30 @@ export default function PrefixManager({
 
       {accessGranted && showAddForm && (
         <form onSubmit={handleAddNew} className="mb-5 p-4 rounded-xl bg-zinc-900/90 border border-zinc-700/60 transition-all">
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <input
               type="text"
-              value={newPrefixInput}
+              value={newPrefixNameInput}
               onChange={(e) => {
-                setNewPrefixInput(formatPrefix(e.target.value));
+                setNewPrefixNameInput(formatName(e.target.value));
                 setErrorMsg('');
               }}
-              placeholder="e.g. PCM, PBHM, BB-NOW, SB-IFC"
-              className="flex-1 bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 uppercase focus:outline-none focus:border-[#00e676] focus:ring-1 focus:ring-[#00e676]"
+              placeholder="Prefix Name"
+              className="bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 uppercase focus:outline-none focus:border-[#00e676] focus:ring-1 focus:ring-[#00e676]"
               autoFocus
             />
+            <input
+              type="text"
+              value={newPrefixCodeInput}
+              onChange={(e) => {
+                setNewPrefixCodeInput(formatCode(e.target.value));
+                setErrorMsg('');
+              }}
+              placeholder="Prefix Code"
+              className="bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 uppercase focus:outline-none focus:border-[#00e676] focus:ring-1 focus:ring-[#00e676]"
+            />
+          </div>
+          <div className="mt-3 flex justify-end">
             <button
               type="submit"
               className="px-4 py-2 bg-[#00e676] text-black font-semibold text-sm rounded-lg hover:bg-[#00c864] transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
@@ -345,7 +374,7 @@ export default function PrefixManager({
           <input
             type="text"
             value={activePrefix}
-            onChange={(e) => onPrefixInputChange(formatPrefix(e.target.value))}
+            onChange={(e) => onPrefixInputChange(formatCode(e.target.value))}
             placeholder="TYPE OR SELECT A PREFIX..."
             className="w-full bg-zinc-900/90 border border-zinc-750 rounded-xl px-4 py-3 text-white text-base sm:text-lg font-mono font-bold tracking-wider uppercase focus:outline-none focus:border-[#00e676] focus:ring-2 focus:ring-[#00e676]/20 transition-all"
           />
@@ -363,13 +392,14 @@ export default function PrefixManager({
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm font-semibold text-zinc-200">Edit Prefix</p>
-                <p className="text-xs text-zinc-400">Update the selected prefix value</p>
+                <p className="text-xs text-zinc-400">Update the selected prefix details</p>
               </div>
               <button
                 type="button"
                 onClick={() => {
                   setEditId(null);
-                  setEditDraft('');
+                  setEditNameDraft('');
+                  setEditCodeDraft('');
                   setEditError('');
                 }}
                 className="text-zinc-400 hover:text-white text-xl leading-none"
@@ -380,16 +410,28 @@ export default function PrefixManager({
             </div>
 
             <form onSubmit={handleEditSave} className="space-y-4">
-              <input
-                type="text"
-                value={editDraft}
-                onChange={(e) => {
-                  setEditDraft(e.target.value);
-                  setEditError('');
-                }}
-                className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white uppercase focus:outline-none focus:border-[#00e676] focus:ring-2 focus:ring-[#00e676]/20"
-                autoFocus
-              />
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  value={editNameDraft}
+                  onChange={(e) => {
+                    setEditNameDraft(formatName(e.target.value));
+                    setEditError('');
+                  }}
+                  placeholder="Prefix Name"
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white uppercase focus:outline-none focus:border-[#00e676] focus:ring-2 focus:ring-[#00e676]/20"
+                />
+                <input
+                  type="text"
+                  value={editCodeDraft}
+                  onChange={(e) => {
+                    setEditCodeDraft(formatCode(e.target.value));
+                    setEditError('');
+                  }}
+                  placeholder="Prefix Code"
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white uppercase focus:outline-none focus:border-[#00e676] focus:ring-2 focus:ring-[#00e676]/20"
+                />
+              </div>
 
               {editError && <p className="text-rose-400 text-xs">{editError}</p>}
 
@@ -399,7 +441,8 @@ export default function PrefixManager({
                   className="px-3 py-2 bg-zinc-800 text-zinc-200 text-sm font-semibold rounded-lg hover:bg-zinc-700"
                   onClick={() => {
                     setEditId(null);
-                    setEditDraft('');
+                    setEditNameDraft('');
+                    setEditCodeDraft('');
                     setEditError('');
                   }}
                 >
@@ -431,7 +474,7 @@ export default function PrefixManager({
             </div>
 
             <p className="text-sm text-zinc-200 mb-5">
-              Delete <span className="font-mono text-white">{deleteTarget.prefix}</span> from your saved prefix list?
+              Delete <span className="font-mono text-white">{deleteTarget.name || deleteTarget.code}</span> from your saved prefix list?
             </p>
 
             <div className="flex justify-end gap-2">
@@ -478,7 +521,8 @@ export default function PrefixManager({
                     onClick={(e) => {
                       e.stopPropagation();
                       setEditId(prefix._id);
-                      setEditDraft(prefix.prefix);
+                      setEditNameDraft(prefix.name || prefix.code || '');
+                      setEditCodeDraft(prefix.code || prefix.name || '');
                       setEditError('');
                       closeMenu();
                     }}
@@ -521,23 +565,25 @@ export default function PrefixManager({
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             {prefixes.map((prefix) => {
-              const isSelected = activePrefix === prefix.prefix;
+              const itemName = prefix.name || prefix.code || 'UNKNOWN';
+              const itemCode = prefix.code || prefix.name || '';
+              const isSelected = activePrefix === itemCode;
 
               return (
-                <div
-                  key={prefix._id}
-                  className="group relative"
-                >
+                <div key={prefix._id} className="group relative">
                   <button
                     type="button"
-                    onClick={() => onSelectPrefix(prefix.prefix)}
-                    className={`w-full text-left sm:text-center pl-3 pr-10 py-2.5 rounded-xl font-mono text-xs sm:text-sm font-bold tracking-wide transition-all duration-200 cursor-pointer flex items-center justify-between gap-1.5 ${isSelected
+                    onClick={() => onSelectPrefix(itemCode)}
+                    className={`w-full text-left pl-3 pr-10 py-2.5 rounded-xl transition-all duration-200 cursor-pointer ${isSelected
                       ? 'bg-[#00e676] text-zinc-950 shadow-[0_0_15px_rgba(0,230,118,0.35)] scale-[1.01]'
-                      : 'bg-zinc-800/80 hover:bg-zinc-750 text-zinc-200 hover:text-white border border-zinc-700/60 hover:border-zinc-500'
-                      }`}
+                      : 'bg-zinc-800/80 hover:bg-zinc-750 text-zinc-200 hover:text-white border border-zinc-700/60 hover:border-zinc-500'}
+                    `}
                   >
-                    <span className="truncate min-w-0">{prefix.prefix}</span>
-                    {isSelected && <Sparkles className="w-3 h-3 flex-shrink-0" />}
+                    <span className="flex flex-col leading-tight">
+                      <span className="text-xs font-semibold uppercase tracking-wide truncate">{itemName}</span>
+                      <span className="mt-0.5 font-mono text-[10px] sm:text-[11px] font-bold tracking-wide uppercase truncate">{itemCode}</span>
+                    </span>
+                    {isSelected && <Sparkles className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 flex-shrink-0" />}
                   </button>
 
                   {accessGranted && (
@@ -551,7 +597,7 @@ export default function PrefixManager({
                           ? 'text-zinc-900/70 hover:text-zinc-950 hover:bg-black/10'
                           : 'text-zinc-400 hover:text-white hover:bg-zinc-900/80'}
                         `}
-                        title={`Options for ${prefix.prefix}`}
+                        title={`Options for ${itemName}`}
                       >
                         <MoreVertical className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                       </button>
