@@ -83,6 +83,66 @@ export const addPrefix = async (req, res) => {
     }
 };
 
+export const updatePrefix = async (req, res) => {
+    try {
+        const { id, newPrefix } = req.body;
+
+        if (!id) {
+            return res.status(400).json({
+                success: false,
+                message: 'Prefix id is required',
+            });
+        }
+
+        const normalized = normalizePrefix(newPrefix);
+
+        if (!normalized) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide a valid prefix value',
+            });
+        }
+
+        const duplicate = await Prefix.findOne({
+            prefix: normalized,
+            _id: { $ne: id },
+        });
+
+        if (duplicate) {
+            return res.status(409).json({
+                success: false,
+                message: 'This prefix already exists',
+            });
+        }
+
+        const updated = await Prefix.findByIdAndUpdate(
+            id,
+            { prefix: normalized },
+            { new: true }
+        );
+
+        if (!updated) {
+            return res.status(404).json({
+                success: false,
+                message: 'Prefix not found',
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Prefix updated successfully!',
+            prefix: updated,
+        });
+    } catch (error) {
+        console.error('Error updating prefix:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to update prefix',
+            error: error.message,
+        });
+    }
+};
+
 export const deletePrefix = async (req, res) => {
     try {
         const { deleteId } = req.body;

@@ -151,6 +151,76 @@ export default function App() {
     generateNewCode(cleanPrefix, true);
   };
 
+  const handleEditPrefix = async (prefixId, newPrefixValue) => {
+    const normalized = formatPrefix(newPrefixValue);
+
+    if (!normalized) {
+      setToast({
+        type: "error",
+        message: "Please enter a valid prefix",
+      });
+      return;
+    }
+
+    const duplicate = prefixes.some(
+      (item) => item._id !== prefixId && item.prefix === normalized
+    );
+
+    if (duplicate) {
+      setToast({
+        type: "error",
+        message: `Prefix "${normalized}" already exists`,
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(SERVER_URL, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: prefixId,
+          newPrefix: normalized,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const oldValue = prefixes.find((item) => item._id === prefixId)?.prefix;
+
+        setPrefixes((prev) =>
+          prev.map((item) =>
+            item._id === prefixId ? { ...item, prefix: normalized } : item
+          )
+        );
+
+        if (activePrefix === oldValue) {
+          setActivePrefix(normalized);
+          generateNewCode(normalized, true);
+        }
+
+        setToast({
+          type: "success",
+          message: `Prefix updated to "${normalized}"`,
+        });
+      } else {
+        setToast({
+          type: "error",
+          message: data.message || "Failed to update prefix",
+        });
+      }
+    } catch (error) {
+      console.error("Edit prefix error:", error);
+      setToast({
+        type: "error",
+        message: "Could not update prefix",
+      });
+    }
+  };
+
   const handleDeletePrefix = async (prefixToDelete) => {
     const deleteId = prefixToDelete._id;
 
@@ -172,7 +242,6 @@ export default function App() {
 
         setPrefixes(nextPrefixes);
 
-        // prefixToDelete is an object
         if (activePrefix === prefixToDelete.prefix) {
           const nextActive = nextPrefixes[0]?.prefix || "";
 
@@ -245,6 +314,7 @@ export default function App() {
               activePrefix={activePrefix}
               onSelectPrefix={handleSelectPrefix}
               onAddPrefix={handleAddPrefix}
+              onEditPrefix={handleEditPrefix}
               onDeletePrefix={handleDeletePrefix}
               onPrefixInputChange={(newVal) => setActivePrefix(formatPrefix(newVal))}
             />

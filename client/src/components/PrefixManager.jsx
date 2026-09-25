@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Tag, Plus, Trash2, Check, Sparkles } from 'lucide-react';
+import { Tag, Plus, Trash2, Check, Sparkles, MoreVertical, Pencil } from 'lucide-react';
 import { formatPrefix, parsePrefixList } from '../utils/qrUtils';
 
 export default function PrefixManager({
@@ -7,12 +7,18 @@ export default function PrefixManager({
   activePrefix,
   onSelectPrefix,
   onAddPrefix,
+  onEditPrefix,
   onDeletePrefix,
   onPrefixInputChange,
 }) {
   const [newPrefixInput, setNewPrefixInput] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [menuOpenId, setMenuOpenId] = useState(null);
+  const [editId, setEditId] = useState(null);
+  const [editDraft, setEditDraft] = useState('');
+  const [editError, setEditError] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const handleAddNew = (e) => {
     e.preventDefault();
@@ -36,6 +42,31 @@ export default function PrefixManager({
     setNewPrefixInput('');
     setErrorMsg('');
     setShowAddForm(false);
+  };
+
+  const handleEditSave = (e) => {
+    e.preventDefault();
+    const cleanValue = formatPrefix(editDraft);
+
+    if (!cleanValue) {
+      setEditError('Please enter a valid prefix');
+      return;
+    }
+
+    const duplicate = prefixes.some(
+      (item) => item._id !== editId && item.prefix === cleanValue
+    );
+
+    if (duplicate) {
+      setEditError(`"${cleanValue}" already exists`);
+      return;
+    }
+
+    onEditPrefix(editId, cleanValue);
+    setEditId(null);
+    setEditDraft('');
+    setEditError('');
+    setMenuOpenId(null);
   };
 
   return (
@@ -116,6 +147,70 @@ export default function PrefixManager({
         </div>
       </div>
 
+      {editId && (
+        <form onSubmit={handleEditSave} className="mb-5 p-4 rounded-xl bg-zinc-950 border border-zinc-700">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              value={editDraft}
+              onChange={(e) => {
+                setEditDraft(e.target.value);
+                setEditError('');
+              }}
+              className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white uppercase focus:outline-none focus:border-[#00e676]"
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                className="px-3 py-2 bg-[#00e676] text-black text-sm font-semibold rounded-lg hover:bg-[#00c864]"
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                className="px-3 py-2 bg-zinc-800 text-zinc-200 text-sm font-semibold rounded-lg hover:bg-zinc-700"
+                onClick={() => {
+                  setEditId(null);
+                  setEditDraft('');
+                  setEditError('');
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+          {editError && <p className="text-rose-400 text-xs mt-2">{editError}</p>}
+        </form>
+      )}
+
+      {deleteTarget && (
+        <div className="mb-5 p-4 rounded-xl border border-amber-500/40 bg-amber-500/10">
+          <p className="text-sm text-amber-200 font-medium">
+            Delete prefix <span className="font-mono text-white">{deleteTarget.prefix}</span>?
+          </p>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                onDeletePrefix(deleteTarget);
+                setDeleteTarget(null);
+              }}
+              className="px-3 py-2 bg-rose-500 text-white text-sm font-semibold rounded-lg hover:bg-rose-400"
+            >
+              OK
+            </button>
+            <button
+              type="button"
+              onClick={() => setDeleteTarget(null)}
+              className="px-3 py-2 bg-zinc-800 text-zinc-200 text-sm font-semibold rounded-lg hover:bg-zinc-700"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Grid of Saved Prefixes */}
       <div>
         <div className="flex items-center justify-between mb-3">
@@ -133,7 +228,7 @@ export default function PrefixManager({
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             {prefixes.map((prefix) => {
-              const isSelected = activePrefix === prefix;
+              const isSelected = activePrefix === prefix.prefix;
 
               return (
                 <div
@@ -152,21 +247,53 @@ export default function PrefixManager({
                     {isSelected && <Sparkles className="w-3 h-3 flex-shrink-0" />}
                   </button>
 
-                  {/* Delete button: Available for ANY prefix */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDeletePrefix(prefix);
-                    }}
-                    title={`Delete prefix ${prefix.prefix}`}
-                    className={`absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded-md transition-all cursor-pointer ${isSelected
-                      ? 'text-zinc-900/60 hover:text-zinc-950 hover:bg-black/10'
-                      : 'text-zinc-400 hover:text-rose-400 hover:bg-zinc-900/80 opacity-70 group-hover:opacity-100'
-                      }`}
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="absolute right-1.5 top-1/2 -translate-y-1/2 z-10">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMenuOpenId((current) => (current === prefix._id ? null : prefix._id));
+                      }}
+                      className={`p-1.5 rounded-md transition-all cursor-pointer ${isSelected
+                        ? 'text-zinc-900/70 hover:text-zinc-950 hover:bg-black/10'
+                        : 'text-zinc-400 hover:text-white hover:bg-zinc-900/80'}
+                      `}
+                      title={`Options for ${prefix.prefix}`}
+                    >
+                      <MoreVertical className="w-3.5 h-3.5" />
+                    </button>
+
+                    {menuOpenId === prefix._id && (
+                      <div className="absolute right-0 top-full mt-1.5 w-32 rounded-xl border border-zinc-700 bg-zinc-900 shadow-2xl overflow-hidden">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditId(prefix._id);
+                            setEditDraft(prefix.prefix);
+                            setEditError('');
+                            setMenuOpenId(null);
+                          }}
+                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                        >
+                          <Pencil className="w-3.5 h-3.5 text-[#00e676]" />
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteTarget(prefix);
+                            setMenuOpenId(null);
+                          }}
+                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}

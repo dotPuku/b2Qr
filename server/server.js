@@ -1,4 +1,4 @@
-import { getPrefix, addPrefix, deletePrefix } from './controller.js';
+import { getPrefix, addPrefix, updatePrefix, deletePrefix } from './controller.js';
 import express from 'express';
 import cors from 'cors';
 import connectDB from './connectDB.js';
@@ -48,7 +48,7 @@ app.get('/health', (_req, res) => {
     res.status(200).json({ success: true, status: 'ok' });
 });
 
-app.route('/').get(getPrefix).post(addPrefix);
+app.route('/').get(getPrefix).post(addPrefix).put(updatePrefix);
 app.route('/delete').post(deletePrefix);
 
 const startServer = async () => {
