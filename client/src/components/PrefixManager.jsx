@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Tag, Plus, Trash2, Check, Sparkles, MoreVertical, Pencil } from 'lucide-react';
 import { formatPrefix, parsePrefixList } from '../utils/qrUtils';
 
@@ -19,21 +19,22 @@ export default function PrefixManager({
   const [editDraft, setEditDraft] = useState('');
   const [editError, setEditError] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const menuRefs = useRef({});
+  const [menuAnchor, setMenuAnchor] = useState(null);
 
-  useEffect(() => {
-    const closeMenus = (event) => {
-      if (!menuOpenId) return;
+  const closeMenu = () => {
+    setMenuOpenId(null);
+    setMenuAnchor(null);
+  };
 
-      const activeMenu = menuRefs.current[menuOpenId];
-      if (activeMenu && !activeMenu.contains(event.target)) {
-        setMenuOpenId(null);
-      }
-    };
-
-    document.addEventListener('mousedown', closeMenus);
-    return () => document.removeEventListener('mousedown', closeMenus);
-  }, [menuOpenId]);
+  const openMenuForPrefix = (event, prefix) => {
+    event.stopPropagation();
+    const rect = event.currentTarget.getBoundingClientRect();
+    setMenuOpenId(prefix._id);
+    setMenuAnchor({
+      x: rect.right - 8,
+      y: rect.bottom + 8,
+    });
+  };
 
   const handleAddNew = (e) => {
     e.preventDefault();
@@ -264,12 +265,52 @@ export default function PrefixManager({
         </div>
       )}
 
-      {menuOpenId && (
-        <div
-          className="fixed inset-0 z-40 bg-transparent"
-          onClick={() => setMenuOpenId(null)}
-          aria-hidden="true"
-        />
+      {menuOpenId && menuAnchor && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-transparent"
+            onClick={closeMenu}
+            aria-hidden="true"
+          />
+
+          <div
+            className="fixed z-50 w-40 rounded-xl border border-zinc-700 bg-zinc-900 shadow-2xl overflow-hidden"
+            style={{ left: menuAnchor.x, top: menuAnchor.y }}
+          >
+            {prefixes
+              .filter((prefix) => prefix._id === menuOpenId)
+              .map((prefix) => (
+                <React.Fragment key={prefix._id}>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditId(prefix._id);
+                      setEditDraft(prefix.prefix);
+                      setEditError('');
+                      closeMenu();
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                  >
+                    <Pencil className="w-3.5 h-3.5 text-[#00e676]" />
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteTarget(prefix);
+                      closeMenu();
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                    Delete
+                  </button>
+                </React.Fragment>
+              ))}
+          </div>
+        </>
       )}
 
       {/* Grid of Saved Prefixes */}
@@ -308,18 +349,10 @@ export default function PrefixManager({
                     {isSelected && <Sparkles className="w-3 h-3 flex-shrink-0" />}
                   </button>
 
-                  <div
-                    ref={(node) => {
-                      if (node) menuRefs.current[prefix._id] = node;
-                    }}
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 z-[60]"
-                  >
+                  <div className="absolute right-1.5 top-1/2 -translate-y-1/2 z-20">
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setMenuOpenId((current) => (current === prefix._id ? null : prefix._id));
-                      }}
+                      onClick={(e) => openMenuForPrefix(e, prefix)}
                       className={`p-1.5 rounded-md transition-all cursor-pointer ${isSelected
                         ? 'text-zinc-900/70 hover:text-zinc-950 hover:bg-black/10'
                         : 'text-zinc-400 hover:text-white hover:bg-zinc-900/80'}
@@ -328,37 +361,6 @@ export default function PrefixManager({
                     >
                       <MoreVertical className="w-3.5 h-3.5" />
                     </button>
-
-                    {menuOpenId === prefix._id && (
-                      <div className="absolute right-0 top-full mt-2 w-40 rounded-xl border border-zinc-700 bg-zinc-900 shadow-2xl overflow-hidden z-[70]">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditId(prefix._id);
-                            setEditDraft(prefix.prefix);
-                            setEditError('');
-                            setMenuOpenId(null);
-                          }}
-                          className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-zinc-200 hover:bg-zinc-800"
-                        >
-                          <Pencil className="w-3.5 h-3.5 text-[#00e676]" />
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeleteTarget(prefix);
-                            setMenuOpenId(null);
-                          }}
-                          className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-zinc-200 hover:bg-zinc-800"
-                        >
-                          <Trash2 className="w-3.5 h-3.5 text-rose-400" />
-                          Delete
-                        </button>
-                      </div>
-                    )}
                   </div>
                 </div>
               );
