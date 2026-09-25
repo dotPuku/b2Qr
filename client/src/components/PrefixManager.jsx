@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tag, Plus, Trash2, Check, Sparkles, MoreVertical, Pencil } from 'lucide-react';
 import { formatPrefix, parsePrefixList } from '../utils/qrUtils';
 
@@ -34,6 +34,17 @@ export default function PrefixManager({
   const [accessKeyError, setAccessKeyError] = useState('');
 
   const accessGranted = String(accessKey || '').trim() === ACCESS_KEY;
+
+  useEffect(() => {
+    if (!accessGranted) {
+      setMenuOpenId(null);
+      setMenuAnchor(null);
+      setEditId(null);
+      setEditDraft('');
+      setEditError('');
+      setDeleteTarget(null);
+    }
+  }, [accessGranted]);
 
   const saveAccessKey = () => {
     const trimmed = String(accessKey || '').trim();
@@ -482,25 +493,23 @@ export default function PrefixManager({
                     {isSelected && <Sparkles className="w-3 h-3 flex-shrink-0" />}
                   </button>
 
-                  <div className="absolute right-1.5 top-1/2 -translate-y-1/2 z-20">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        if (!accessGranted) {
-                          setErrorMsg('Access key is invalid.');
-                          return;
-                        }
-                        openMenuForPrefix(e, prefix);
-                      }}
-                      className={`p-2 sm:p-1.5 rounded-md transition-all cursor-pointer ${isSelected
-                        ? 'text-zinc-900/70 hover:text-zinc-950 hover:bg-black/10'
-                        : 'text-zinc-400 hover:text-white hover:bg-zinc-900/80'}
-                      `}
-                      title={`Options for ${prefix.prefix}`}
-                    >
-                      <MoreVertical className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-                    </button>
-                  </div>
+                  {accessGranted && (
+                    <div className="absolute right-1.5 top-1/2 -translate-y-1/2 z-20">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          openMenuForPrefix(e, prefix);
+                        }}
+                        className={`p-2 sm:p-1.5 rounded-md transition-all cursor-pointer ${isSelected
+                          ? 'text-zinc-900/70 hover:text-zinc-950 hover:bg-black/10'
+                          : 'text-zinc-400 hover:text-white hover:bg-zinc-900/80'}
+                        `}
+                        title={`Options for ${prefix.prefix}`}
+                      >
+                        <MoreVertical className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })}
