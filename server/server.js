@@ -33,7 +33,15 @@ app.use(
     })
 );
 
-app.options('*', cors());
+app.use((req, res, next) => {
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(204);
+        return;
+    }
+
+    next();
+});
+
 app.use(express.json());
 
 app.get('/health', (_req, res) => {
