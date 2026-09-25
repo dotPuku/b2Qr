@@ -62,7 +62,6 @@ export default function PrefixManager({
     try {
       localStorage.setItem('access_key', trimmed);
     } catch {
-      // ignore storage write issues in restricted environments
     }
 
     setAccessKeyError('');
@@ -74,7 +73,6 @@ export default function PrefixManager({
     try {
       localStorage.removeItem('access_key');
     } catch {
-      // ignore storage removal issues in restricted environments
     }
 
     setAccessKey('');
