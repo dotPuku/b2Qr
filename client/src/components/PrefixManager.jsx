@@ -286,12 +286,12 @@ export default function PrefixManager({
               return (
                 <div
                   key={prefix._id}
-                  className="group relative flex items-center"
+                  className="group relative flex items-center gap-1.5"
                 >
                   <button
                     type="button"
                     onClick={() => onSelectPrefix(prefix.prefix)}
-                    className={`w-full text-left sm:text-center pl-3 pr-8 py-2.5 rounded-xl font-mono text-xs sm:text-sm font-bold tracking-wide transition-all duration-200 cursor-pointer flex items-center justify-between gap-1.5 ${isSelected
+                    className={`flex-1 text-left sm:text-center pl-3 pr-2 py-2.5 rounded-xl font-mono text-xs sm:text-sm font-bold tracking-wide transition-all duration-200 cursor-pointer flex items-center justify-between gap-1.5 ${isSelected
                       ? 'bg-[#00e676] text-zinc-950 shadow-[0_0_15px_rgba(0,230,118,0.35)] scale-[1.01]'
                       : 'bg-zinc-800/80 hover:bg-zinc-750 text-zinc-200 hover:text-white border border-zinc-700/60 hover:border-zinc-500'
                       }`}
@@ -304,7 +304,7 @@ export default function PrefixManager({
                     ref={(node) => {
                       if (node) menuRefs.current[prefix._id] = node;
                     }}
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 z-20"
+                    className="relative z-20 flex-shrink-0"
                   >
                     <button
                       type="button"
