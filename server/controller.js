@@ -39,7 +39,7 @@ export const getPrefix = async (req, res) => {
             { name: 'COMP HAZARD', code: 'CBHM-[10]' }
         ];
 
-        await Prefix.Prefixes.insertMany(preparedData);
+        await Prefix.insertMany(preparedData);
         const prefixes = await Prefix.find();
 
         res.status(200).json({
