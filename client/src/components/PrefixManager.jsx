@@ -166,32 +166,34 @@ export default function PrefixManager({
 
   return (
     <div className="bg-[#1b1d24] border border-zinc-800/80 rounded-2xl p-5 sm:p-6 shadow-xl relative overflow-visible">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-zinc-800">
-        <div>
-          <div className="flex items-center gap-2 text-zinc-300 font-semibold text-base sm:text-lg">
-            <Tag className="w-4 h-4 text-[#00e676]" />
-            <span>Choose or Add Prefix</span>
+      {accessGranted && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-zinc-800">
+          <div>
+            <div className="flex items-center gap-2 text-zinc-300 font-semibold text-base sm:text-lg">
+              <Tag className="w-4 h-4 text-[#00e676]" />
+              <span>Choose or Add Prefix</span>
+            </div>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              Click any prefix to load it into the input box
+            </p>
           </div>
-          <p className="text-xs text-zinc-400 mt-0.5">
-            Click any prefix to load it into the input box
-          </p>
-        </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            setShowAddForm(!showAddForm);
-            setErrorMsg('');
-          }}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#00e676]/10 text-[#00e676] border border-[#00e676]/30 hover:bg-[#00e676]/20 transition-all cursor-pointer self-start sm:self-auto"
-        >
-          <Plus
-            className="w-3.5 h-3.5 transition-transform duration-300"
-            style={{ transform: showAddForm ? 'rotate(45deg)' : 'rotate(0deg)' }}
-          />
-          <span>{showAddForm ? 'Cancel' : 'Add Custom Prefix'}</span>
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={() => {
+              setShowAddForm(!showAddForm);
+              setErrorMsg('');
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#00e676]/10 text-[#00e676] border border-[#00e676]/30 hover:bg-[#00e676]/20 transition-all cursor-pointer self-start sm:self-auto"
+          >
+            <Plus
+              className="w-3.5 h-3.5 transition-transform duration-300"
+              style={{ transform: showAddForm ? 'rotate(45deg)' : 'rotate(0deg)' }}
+            />
+            <span>{showAddForm ? 'Cancel' : 'Add Custom Prefix'}</span>
+          </button>
+        </div>
+      )}
 
       <div className="mb-5 flex justify-end">
         <button
@@ -256,13 +258,13 @@ export default function PrefixManager({
 
           {!accessGranted && !accessKeyError && (
             <p className="text-[11px] text-amber-300 mt-2">
-              Use the correct hard-coded access key to unlock prefix management.
+              Use the correct access key to access prefix management.
             </p>
           )}
         </div>
       )}
 
-      {showAddForm && (
+      {accessGranted && showAddForm && (
         <form onSubmit={handleAddNew} className="mb-5 p-4 rounded-xl bg-zinc-900/90 border border-zinc-700/60 transition-all">
           <div className="flex flex-col sm:flex-row gap-2">
             <input
