@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Tag, Plus, Trash2, Check, Sparkles, MoreVertical, Pencil } from 'lucide-react';
+import {
+  Tag,
+  Plus,
+  Trash2,
+  Check,
+  Sparkles,
+  MoreVertical,
+  Pencil,
+  KeyRound,
+  X,
+  Eye,
+  EyeOff,
+} from 'lucide-react';
 import { formatPrefix, parsePrefixList } from '../utils/qrUtils';
 
 const ACCESS_KEY = 'ATANU04@#';
@@ -33,8 +45,11 @@ export default function PrefixManager({
   const [showAccessKeySection, setShowAccessKeySection] = useState(false);
   const [showAccessKeyValue, setShowAccessKeyValue] = useState(false);
   const [accessKeyError, setAccessKeyError] = useState('');
+  const [isAccessKeyEditing, setIsAccessKeyEditing] = useState(false);
 
   const accessGranted = String(savedAccessKey || '').trim() === ACCESS_KEY;
+  const hasSavedAccessKey = Boolean(String(savedAccessKey || '').trim());
+  const accessKeyInputDisabled = hasSavedAccessKey && !isAccessKeyEditing;
 
   useEffect(() => {
     setAccessKey(savedAccessKey);
@@ -73,7 +88,19 @@ export default function PrefixManager({
     setAccessKey(trimmed);
     setAccessKeyError('');
     setShowAccessKeyValue(false);
-    setShowAccessKeySection(false);
+    setIsAccessKeyEditing(false);
+  };
+
+  const handleAccessKeyAction = () => {
+    if (hasSavedAccessKey && !isAccessKeyEditing) {
+      setIsAccessKeyEditing(true);
+      setAccessKey(savedAccessKey);
+      setAccessKeyError('');
+      setShowAccessKeyValue(true);
+      return;
+    }
+
+    saveAccessKey();
   };
 
   const clearSavedAccessKey = () => {
@@ -86,6 +113,7 @@ export default function PrefixManager({
     setAccessKey('');
     setAccessKeyError('');
     setShowAccessKeyValue(false);
+    setIsAccessKeyEditing(false);
     setShowAccessKeySection(true);
   };
 
@@ -209,7 +237,12 @@ export default function PrefixManager({
           onClick={() => setShowAccessKeySection((prev) => !prev)}
           className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-900/80 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-200 hover:border-[#00e676]/50 hover:text-[#00e676] transition-colors"
         >
-          {showAccessKeySection ? 'Hide Access Key' : 'Access Key'}
+          {showAccessKeySection ? (
+            <X className="w-3.5 h-3.5" />
+          ) : (
+            <KeyRound className="w-3.5 h-3.5" />
+          )}
+          <span>Access Key</span>
         </button>
       </div>
 
@@ -219,35 +252,40 @@ export default function PrefixManager({
             <label className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-400">
               Access Key
             </label>
-            {accessKey && (
-              <button
-                type="button"
-                onClick={() => setShowAccessKeyValue((prev) => !prev)}
-                className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-300 hover:text-white"
-              >
-                {showAccessKeyValue ? 'Hide' : 'Show'}
-              </button>
-            )}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2">
-            <input
-              type={showAccessKeyValue ? 'text' : 'password'}
-              value={accessKey}
-              onChange={(e) => {
-                setAccessKey(e.target.value);
-                setAccessKeyError('');
-                setErrorMsg('');
-              }}
-              placeholder="Enter access key"
-              className="flex-1 bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#00e676] focus:ring-1 focus:ring-[#00e676]"
-            />
+            <div className="relative flex-1">
+              <input
+                type={showAccessKeyValue ? 'text' : 'password'}
+                value={accessKey}
+                disabled={accessKeyInputDisabled}
+                onChange={(e) => {
+                  setAccessKey(e.target.value);
+                  setAccessKeyError('');
+                  setErrorMsg('');
+                }}
+                placeholder="Enter access key"
+                className="w-full bg-zinc-950 border border-zinc-700 rounded-lg pl-3 pr-10 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#00e676] focus:ring-1 focus:ring-[#00e676] disabled:cursor-not-allowed disabled:opacity-60"
+              />
+              {accessKey && (
+                <button
+                  type="button"
+                  onClick={() => setShowAccessKeyValue((prev) => !prev)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors"
+                  aria-label={showAccessKeyValue ? 'Hide access key' : 'Show access key'}
+                >
+                  {showAccessKeyValue ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              )}
+            </div>
+
             <button
               type="button"
-              onClick={saveAccessKey}
+              onClick={handleAccessKeyAction}
               className="px-3 py-2 bg-[#00e676] text-black text-sm font-semibold rounded-lg hover:bg-[#00c864]"
             >
-              Save
+              {hasSavedAccessKey && !isAccessKeyEditing ? 'Edit' : 'Save'}
             </button>
             {(savedAccessKey || accessKey) && (
               <button
@@ -255,7 +293,7 @@ export default function PrefixManager({
                 onClick={clearSavedAccessKey}
                 className="px-3 py-2 bg-rose-500/15 text-rose-300 border border-rose-400/30 text-sm font-semibold rounded-lg hover:bg-rose-500/20"
               >
-                Clear
+                Delete
               </button>
             )}
           </div>
