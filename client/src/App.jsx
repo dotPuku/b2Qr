@@ -27,11 +27,12 @@ export default function App() {
 
       if (data.success) {
         setPrefixes(data.prefixes || []);
-      } else {
-        console.error("API error:", data.message);
       }
     } catch (error) {
-      console.error("Fetch prefixes error:", error);
+      setToast({
+        type: "error",
+        message: "Could not load saved prefixes",
+      });
     }
   };
 
@@ -108,8 +109,6 @@ export default function App() {
         });
       }
     } catch (error) {
-      console.error("Add prefix error:", error);
-
       setToast({
         type: "error",
         message: "Could not connect to server",
@@ -176,7 +175,7 @@ export default function App() {
 
     try {
       const response = await fetch(`${SERVER_URL}/update`, {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -215,7 +214,6 @@ export default function App() {
       });
       return false;
     } catch (error) {
-      console.error("Edit prefix error:", error);
       setToast({
         type: "error",
         message: "Could not update prefix",
@@ -268,8 +266,6 @@ export default function App() {
         });
       }
     } catch (error) {
-      console.error("Delete prefix error:", error);
-
       setToast({
         type: "error",
         message: "Could not connect to server",
@@ -288,7 +284,6 @@ export default function App() {
       });
       setTimeout(() => setHasCopied(false), 2000);
     } catch (err) {
-      console.error(err);
       setToast({
         type: 'error',
         message: 'Could not copy to clipboard'

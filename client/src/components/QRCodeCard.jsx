@@ -8,7 +8,6 @@ export default function QRCodeCard({
 }) {
   const qrCanvasRef = useRef(null);
 
-  // Download high-resolution PNG
   const handleDownload = () => {
     if (!value.trim()) {
       onNotify?.({ type: 'error', message: 'No text available to generate QR download' });
@@ -22,7 +21,6 @@ export default function QRCodeCard({
         return;
       }
 
-      // Create high-res download
       const imageUri = canvas.toDataURL('image/png');
       const link = document.createElement('a');
       const filename = `QR_${value.replace(/[^a-zA-Z0-9_-]/g, '_')}.png`;
@@ -34,13 +32,11 @@ export default function QRCodeCard({
 
       onNotify?.({ type: 'success', message: `Downloaded ${filename}` });
     } catch (err) {
-      console.error(err);
       onNotify?.({ type: 'error', message: 'Download failed' });
     }
   };
 
 
-  // Print QR label
   const handlePrint = () => {
     if (!value.trim()) return;
     const printWindow = window.open('', '_blank');
@@ -116,7 +112,6 @@ export default function QRCodeCard({
         </div>
       </div>
 
-      {/* QR Code Container with sleek white canvas border */}
       <div className="relative group my-2">
         <div className="bg-white p-4 sm:p-5 rounded-2xl shadow-2xl transition-all duration-300 transform group-hover:scale-[1.02]">
           {hasValue ? (
@@ -137,7 +132,6 @@ export default function QRCodeCard({
         </div>
       </div>
 
-      {/* Active Code Display below QR */}
       <div className="mt-4 mb-5 w-full">
         <div className="text-xs text-zinc-400 mb-1">Encoded Content:</div>
         <div className="bg-zinc-900 border border-zinc-750 px-3 py-2 rounded-xl font-mono text-sm sm:text-base font-bold text-[#00e676] tracking-wider break-all max-w-full">
@@ -145,7 +139,6 @@ export default function QRCodeCard({
         </div>
       </div>
 
-      {/* QR Action Buttons */}
       <div className="flex flex-wrap items-center justify-center gap-2 w-full">
         <button
           type="button"

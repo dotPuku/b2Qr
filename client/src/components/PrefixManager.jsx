@@ -89,7 +89,6 @@ export default function PrefixManager({
 
   return (
     <div className="bg-[#1b1d24] border border-zinc-800/80 rounded-2xl p-5 sm:p-6 shadow-xl relative overflow-visible">
-      {/* Top bar with active input & actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-zinc-800">
         <div>
           <div className="flex items-center gap-2 text-zinc-300 font-semibold text-base sm:text-lg">
@@ -117,7 +116,6 @@ export default function PrefixManager({
         </button>
       </div>
 
-      {/* Add New Prefix Drawer / Form */}
       {showAddForm && (
         <form onSubmit={handleAddNew} className="mb-5 p-4 rounded-xl bg-zinc-900/90 border border-zinc-700/60 transition-all">
           <div className="flex flex-col sm:flex-row gap-2">
@@ -144,7 +142,6 @@ export default function PrefixManager({
         </form>
       )}
 
-      {/* Prefix Input Box (Editable) */}
       <div className="mb-5">
         <label className="block text-xs font-medium text-zinc-400 mb-1.5">
           Active Prefix (Type directly or click a button below):
@@ -313,7 +310,6 @@ export default function PrefixManager({
         </>
       )}
 
-      {/* Grid of Saved Prefixes */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">

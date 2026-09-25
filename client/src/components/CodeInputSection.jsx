@@ -19,8 +19,6 @@ export default function CodeInputSection({
         </div>
       </div>
 
-
-      {/* Main editable text box */}
       <div className="relative mb-4">
         <input
           type="text"
@@ -30,7 +28,6 @@ export default function CodeInputSection({
           className="w-full bg-zinc-950/90 border-2 border-zinc-700/80 hover:border-zinc-600 focus:border-[#00e676] rounded-xl px-4 py-3.5 pr-28 text-white font-mono text-lg sm:text-xl font-bold tracking-wider uppercase focus:outline-none focus:ring-4 focus:ring-[#00e676]/15 transition-all text-center sm:text-left"
         />
 
-        {/* Quick action icons inside input */}
         <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
           {fullText && (
             <button
@@ -65,7 +62,6 @@ export default function CodeInputSection({
         </div>
       </div>
 
-      {/* Primary Action Button: Generate New Suffix / QR */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         <button
           type="button"

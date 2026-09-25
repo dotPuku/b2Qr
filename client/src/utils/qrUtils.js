@@ -11,7 +11,7 @@ export function generateRandomDigits(count) {
 
 export function formatPrefix(str) {
   if (!str) return '';
-  return String(str).toUpperCase().replace(/_/g, '-').trim();
+  return String(str).toUpperCase().trim();
 }
 
 export function buildGeneratedCode(prefixValue) {
