@@ -335,11 +335,11 @@ export default function PrefixManager({
               type="text"
               value={newPrefixNameInput}
               onChange={(e) => {
-                setNewPrefixNameInput(formatName(e.target.value));
+                setNewPrefixNameInput(e.target.value);
                 setErrorMsg('');
               }}
               placeholder="Prefix Name"
-              className="bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 uppercase focus:outline-none focus:border-[#00e676] focus:ring-1 focus:ring-[#00e676]"
+              className="bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#00e676] focus:ring-1 focus:ring-[#00e676]"
               autoFocus
             />
             <input
@@ -415,11 +415,11 @@ export default function PrefixManager({
                   type="text"
                   value={editNameDraft}
                   onChange={(e) => {
-                    setEditNameDraft(formatName(e.target.value));
+                    setEditNameDraft(e.target.value);
                     setEditError('');
                   }}
                   placeholder="Prefix Name"
-                  className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white uppercase focus:outline-none focus:border-[#00e676] focus:ring-2 focus:ring-[#00e676]/20"
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#00e676] focus:ring-2 focus:ring-[#00e676]/20"
                 />
                 <input
                   type="text"
@@ -579,10 +579,7 @@ export default function PrefixManager({
                       : 'bg-zinc-800/80 hover:bg-zinc-750 text-zinc-200 hover:text-white border border-zinc-700/60 hover:border-zinc-500'}
                     `}
                   >
-                    <span className="flex flex-col leading-tight">
-                      <span className="text-xs font-semibold uppercase tracking-wide truncate">{itemName}</span>
-                      <span className="mt-0.5 font-mono text-[10px] sm:text-[11px] font-bold tracking-wide uppercase truncate">{itemCode}</span>
-                    </span>
+                    <span className="block text-xs font-semibold uppercase tracking-wide truncate">{itemName}</span>
                     {isSelected && <Sparkles className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 flex-shrink-0" />}
                   </button>
 
