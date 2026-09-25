@@ -1,6 +1,15 @@
 import Prefix from "./prefix.model.js";
 import { ObjectId } from 'mongodb';
 
+const normalizePrefix = (value) => {
+    if (!value && value !== 0) return '';
+    return String(value)
+        .trim()
+        .toUpperCase()
+        .replace(/_/g, '-')
+        .replace(/\s+/g, '');
+};
+
 export const getPrefix = async (req, res) => {
     try {
         const prefixes = await Prefix.find();
@@ -23,17 +32,46 @@ export const getPrefix = async (req, res) => {
 export const addPrefix = async (req, res) => {
     try {
         const { prefix } = req.body;
+        const prefixList = Array.isArray(prefix)
+            ? prefix
+            : String(prefix || '')
+                .split(',')
+                .map((item) => normalizePrefix(item));
 
-        const newPrefix = new Prefix({ prefix });
+        const cleanedList = [...new Set(
+            prefixList
+                .map((item) => normalizePrefix(item))
+                .filter(Boolean)
+        )];
 
-        const savedPrefix = await newPrefix.save();
+        if (!cleanedList.length) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide at least one valid prefix',
+            });
+        }
 
-        res.status(201).json({
+        const existing = await Prefix.find({ prefix: { $in: cleanedList } });
+        const existingSet = new Set(existing.map((item) => item.prefix));
+        const newValues = cleanedList.filter((item) => !existingSet.has(item));
+
+        if (!newValues.length) {
+            return res.status(409).json({
+                success: false,
+                message: 'All prefixes already exist',
+            });
+        }
+
+        const created = await Prefix.insertMany(
+            newValues.map((value) => ({ prefix: value }))
+        );
+
+        return res.status(201).json({
             success: true,
-            message: 'Prefix Added successfully!',
-            prefix: savedPrefix
+            message: created.length > 1 ? 'Prefixes added successfully!' : 'Prefix Added successfully!',
+            prefixes: created,
+            prefix: created[0],
         });
-
     } catch (error) {
         console.error('Error saving prefix:', error);
 
@@ -43,7 +81,7 @@ export const addPrefix = async (req, res) => {
             error: error.message
         });
     }
-}
+};
 
 export const deletePrefix = async (req, res) => {
     try {
@@ -71,4 +109,4 @@ export const deletePrefix = async (req, res) => {
             error: error.message
         });
     }
-}
+};

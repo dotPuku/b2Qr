@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Tag, Plus, Trash2, Check, Sparkles } from 'lucide-react';
-import { formatPrefix } from '../utils/qrUtils';
+import { formatPrefix, parsePrefixList } from '../utils/qrUtils';
 
 export default function PrefixManager({
   prefixes,
@@ -16,19 +16,23 @@ export default function PrefixManager({
 
   const handleAddNew = (e) => {
     e.preventDefault();
-    const cleanPrefix = formatPrefix(newPrefixInput.trim());
+    const parsedPrefixes = parsePrefixList(newPrefixInput);
 
-    if (!cleanPrefix) {
-      setErrorMsg('Please enter a prefix (e.g. PCM, PBHM)');
+    if (parsedPrefixes.length === 0) {
+      setErrorMsg('Please enter at least one prefix (e.g. PCM, PBHM)');
       return;
     }
 
-    if (prefixes.includes(cleanPrefix)) {
-      setErrorMsg(`"${cleanPrefix}" already exists`);
+    const existingMatches = parsedPrefixes.filter((prefix) =>
+      prefixes.some((item) => item.prefix === prefix)
+    );
+
+    if (existingMatches.length > 0) {
+      setErrorMsg(`These prefixes already exist: ${existingMatches.join(', ')}`);
       return;
     }
 
-    onAddPrefix(cleanPrefix);
+    onAddPrefix(parsedPrefixes);
     setNewPrefixInput('');
     setErrorMsg('');
     setShowAddForm(false);

@@ -48,7 +48,24 @@ export default function App() {
   const [toast, setToast] = useState(null);
 
   const handleAddPrefix = async (newPrefix) => {
-    const cleanPrefix = formatPrefix(newPrefix.trim());
+    const rawValues = Array.isArray(newPrefix)
+      ? newPrefix
+      : String(newPrefix).split(',');
+
+    const cleanPrefixes = [...new Set(
+      rawValues
+        .map((item) => formatPrefix(item))
+        .map((item) => item.replace(/\s+/g, ''))
+        .filter(Boolean)
+    )];
+
+    if (!cleanPrefixes.length) {
+      setToast({
+        type: "error",
+        message: "Please enter at least one valid prefix",
+      });
+      return;
+    }
 
     try {
       const response = await fetch(SERVER_URL, {
@@ -57,22 +74,34 @@ export default function App() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          prefix: cleanPrefix,
+          prefix: cleanPrefixes,
         }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        setPrefixes((prev) => [...prev, data.prefix]);
+        const savedPrefixes = Array.isArray(data.prefixes) ? data.prefixes : [data.prefix].filter(Boolean);
+        const mergedPrefixes = [...prefixes];
 
-        setActivePrefix(cleanPrefix);
+        savedPrefixes.forEach((item) => {
+          if (!mergedPrefixes.some((existing) => existing.prefix === item.prefix)) {
+            mergedPrefixes.push(item);
+          }
+        });
 
-        generateNewCode(cleanPrefix, digitCount, true);
+        setPrefixes(mergedPrefixes);
+
+        const firstAddedPrefix = savedPrefixes[0]?.prefix || cleanPrefixes[0];
+        setActivePrefix(firstAddedPrefix);
+        generateNewCode(firstAddedPrefix, digitCount, true);
 
         setToast({
           type: "success",
-          message: `Prefix "${cleanPrefix}" added and selected!`,
+          message:
+            savedPrefixes.length > 1
+              ? `Added ${savedPrefixes.length} prefixes successfully!`
+              : `Prefix "${firstAddedPrefix}" added and selected!`,
         });
       } else {
         setToast({

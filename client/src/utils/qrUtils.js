@@ -11,5 +11,17 @@ export function generateRandomDigits(count) {
 // Helper to format prefix: uppercase and convert underscores to hyphens
 export function formatPrefix(str) {
   if (!str) return '';
-  return str.toUpperCase().replace(/_/g, '-');
+  return String(str).toUpperCase().replace(/_/g, '-').trim();
+}
+
+export function parsePrefixList(input) {
+  if (!input && input !== 0) return [];
+
+  const values = String(input)
+    .split(',')
+    .map((item) => formatPrefix(item))
+    .map((item) => item.replace(/\s+/g, ''))
+    .filter(Boolean);
+
+  return [...new Set(values)];
 }
