@@ -84,7 +84,15 @@ export const addPrefix = async (req, res) => {
 
 export const updatePrefix = async (req, res) => {
     try {
-        const { id, newPrefix } = req.body;
+        const { id, newPrefix, accessKey } = req.body;
+        const expectedAccessKey = process.env.ACCESS_KEY || 'ATANU04@#';
+
+        if (accessKey && String(accessKey).trim() !== expectedAccessKey) {
+            return res.status(401).json({
+                success: false,
+                message: 'Access key is invalid.',
+            });
+        }
 
         if (!id) {
             return res.status(400).json({
@@ -144,7 +152,15 @@ export const updatePrefix = async (req, res) => {
 
 export const deletePrefix = async (req, res) => {
     try {
-        const { deleteId } = req.body;
+        const { deleteId, accessKey } = req.body;
+        const expectedAccessKey = process.env.ACCESS_KEY || 'ATANU04@#';
+
+        if (accessKey && String(accessKey).trim() !== expectedAccessKey) {
+            return res.status(401).json({
+                success: false,
+                message: 'Access key is invalid.',
+            });
+        }
 
         const deletedPrefix = await Prefix.findByIdAndDelete(deleteId);
 

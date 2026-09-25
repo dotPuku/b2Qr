@@ -10,7 +10,7 @@ import {
 } from './utils/qrUtils';
 
 const ACCESS_KEY = 'ATANU04@#';
-const SERVER_URL = import.meta.env.VITE_SERVER_URL;
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000';
 
 const isAccessKeyValid = (value) => {
   return String(value || '').trim() === ACCESS_KEY;
@@ -197,13 +197,14 @@ export default function App() {
 
     try {
       const response = await fetch(`${SERVER_URL}/update`, {
-        method: "POST",
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           id: prefixId,
           newPrefix: normalized,
+          accessKey,
         }),
       });
 
@@ -257,11 +258,11 @@ export default function App() {
 
     try {
       const response = await fetch(`${SERVER_URL}/delete`, {
-        method: "POST",
+        method: 'DELETE',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ deleteId }),
+        body: JSON.stringify({ deleteId, accessKey }),
       });
 
       const data = await response.json();
@@ -327,7 +328,7 @@ export default function App() {
 
     setToast({
       type: 'info',
-      message: `Loaded from history: ${upper}`
+      message: `Loaded from history: ${upper}`,
     });
   };
 

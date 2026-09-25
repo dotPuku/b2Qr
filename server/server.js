@@ -6,18 +6,14 @@ import 'dotenv/config';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
-const defaultAllowedOrigins = [
+const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:5174',
-    'https://b2qr.vercel.app',
-];
-const allowedOrigins = [...new Set([
-    ...defaultAllowedOrigins,
     ...(process.env.CLIENT_URL || '')
         .split(',')
         .map((origin) => origin.trim().replace(/\/$/, ''))
         .filter(Boolean),
-])];
+];
 
 const isAllowedOrigin = (origin) => {
     if (!origin) return true;
@@ -28,7 +24,7 @@ const isAllowedOrigin = (origin) => {
 app.use(
     cors({
         origin: (origin, callback) => {
-            if (isAllowedOrigin(origin) || allowedOrigins.length === 0) {
+            if (!origin || isAllowedOrigin(origin)) {
                 callback(null, true);
                 return;
             }
@@ -36,7 +32,7 @@ app.use(
             callback(new Error('Not allowed by CORS'));
         },
         credentials: true,
-        methods: ['GET', 'POST', 'OPTIONS'],
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization'],
     })
 );
@@ -57,8 +53,8 @@ app.get('/health', (_req, res) => {
 });
 
 app.route('/').get(getPrefix).post(addPrefix);
-app.route('/update').post(updatePrefix);
-app.route('/delete').post(deletePrefix);
+app.route('/update').put(updatePrefix).post(updatePrefix);
+app.route('/delete').delete(deletePrefix).post(deletePrefix);
 
 const startServer = async () => {
     try {
