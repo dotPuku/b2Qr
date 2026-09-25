@@ -9,6 +9,8 @@ import {
   Pencil,
   KeyRound,
   X,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { formatPrefix, parsePrefixList } from '../utils/qrUtils';
 
@@ -43,10 +45,12 @@ export default function PrefixManager({
   const [showAccessKeySection, setShowAccessKeySection] = useState(false);
   const [showAccessKeyValue, setShowAccessKeyValue] = useState(false);
   const [accessKeyError, setAccessKeyError] = useState('');
+  const [isAccessKeyEditing, setIsAccessKeyEditing] = useState(false);
 
   const accessGranted = String(savedAccessKey || '').trim() === ACCESS_KEY;
   const hasSavedAccessKey = Boolean(String(savedAccessKey || '').trim());
-  const accessKeyActionLabel = hasSavedAccessKey ? 'Edit' : 'Save';
+  const accessKeyActionLabel = hasSavedAccessKey && !isAccessKeyEditing ? 'Edit' : 'Save';
+  const accessKeyInputDisabled = hasSavedAccessKey && !isAccessKeyEditing;
 
   useEffect(() => {
     setAccessKey(savedAccessKey);
@@ -85,7 +89,19 @@ export default function PrefixManager({
     setAccessKey(trimmed);
     setAccessKeyError('');
     setShowAccessKeyValue(false);
-    setShowAccessKeySection(false);
+    setIsAccessKeyEditing(false);
+  };
+
+  const handleAccessKeyAction = () => {
+    if (hasSavedAccessKey && !isAccessKeyEditing) {
+      setIsAccessKeyEditing(true);
+      setAccessKey(savedAccessKey);
+      setAccessKeyError('');
+      setShowAccessKeyValue(true);
+      return;
+    }
+
+    saveAccessKey();
   };
 
   const clearSavedAccessKey = () => {
@@ -98,6 +114,7 @@ export default function PrefixManager({
     setAccessKey('');
     setAccessKeyError('');
     setShowAccessKeyValue(false);
+    setIsAccessKeyEditing(false);
     setShowAccessKeySection(true);
   };
 
@@ -240,9 +257,11 @@ export default function PrefixManager({
               <button
                 type="button"
                 onClick={() => setShowAccessKeyValue((prev) => !prev)}
-                className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-300 hover:text-white"
+                className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-300 hover:text-white"
+                aria-label={showAccessKeyValue ? 'Hide access key' : 'Show access key'}
               >
-                {showAccessKeyValue ? 'Hide' : 'Show'}
+                {showAccessKeyValue ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                <span>{showAccessKeyValue ? 'Hide' : 'Show'}</span>
               </button>
             )}
           </div>
@@ -251,17 +270,18 @@ export default function PrefixManager({
             <input
               type={showAccessKeyValue ? 'text' : 'password'}
               value={accessKey}
+              disabled={accessKeyInputDisabled}
               onChange={(e) => {
                 setAccessKey(e.target.value);
                 setAccessKeyError('');
                 setErrorMsg('');
               }}
               placeholder="Enter access key"
-              className="flex-1 bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#00e676] focus:ring-1 focus:ring-[#00e676]"
+              className="flex-1 bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#00e676] focus:ring-1 focus:ring-[#00e676] disabled:cursor-not-allowed disabled:opacity-60"
             />
             <button
               type="button"
-              onClick={saveAccessKey}
+              onClick={handleAccessKeyAction}
               className="px-3 py-2 bg-[#00e676] text-black text-sm font-semibold rounded-lg hover:bg-[#00c864]"
             >
               {accessKeyActionLabel}
