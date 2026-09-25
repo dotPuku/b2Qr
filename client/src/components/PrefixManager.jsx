@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Tag, Plus, Trash2, Check, Sparkles, MoreVertical, Pencil } from 'lucide-react';
+import {
+  Tag,
+  Plus,
+  Trash2,
+  Check,
+  Sparkles,
+  MoreVertical,
+  Pencil,
+  KeyRound,
+  X,
+} from 'lucide-react';
 import { formatPrefix, parsePrefixList } from '../utils/qrUtils';
 
 const ACCESS_KEY = 'B2QR';
@@ -35,6 +45,8 @@ export default function PrefixManager({
   const [accessKeyError, setAccessKeyError] = useState('');
 
   const accessGranted = String(savedAccessKey || '').trim() === ACCESS_KEY;
+  const hasSavedAccessKey = Boolean(String(savedAccessKey || '').trim());
+  const accessKeyActionLabel = hasSavedAccessKey ? 'Edit' : 'Save';
 
   useEffect(() => {
     setAccessKey(savedAccessKey);
@@ -209,7 +221,12 @@ export default function PrefixManager({
           onClick={() => setShowAccessKeySection((prev) => !prev)}
           className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-900/80 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-200 hover:border-[#00e676]/50 hover:text-[#00e676] transition-colors"
         >
-          {showAccessKeySection ? 'Hide Access Key' : 'Access Key'}
+          {showAccessKeySection ? (
+            <X className="w-3.5 h-3.5" />
+          ) : (
+            <KeyRound className="w-3.5 h-3.5" />
+          )}
+          <span>Access Key</span>
         </button>
       </div>
 
@@ -247,7 +264,7 @@ export default function PrefixManager({
               onClick={saveAccessKey}
               className="px-3 py-2 bg-[#00e676] text-black text-sm font-semibold rounded-lg hover:bg-[#00c864]"
             >
-              Save
+              {accessKeyActionLabel}
             </button>
             {(savedAccessKey || accessKey) && (
               <button
@@ -255,7 +272,7 @@ export default function PrefixManager({
                 onClick={clearSavedAccessKey}
                 className="px-3 py-2 bg-rose-500/15 text-rose-300 border border-rose-400/30 text-sm font-semibold rounded-lg hover:bg-rose-500/20"
               >
-                Clear
+                Delete
               </button>
             )}
           </div>
