@@ -1,5 +1,4 @@
 import Prefix from "./prefix.model.js";
-import { ObjectId } from 'mongodb';
 
 const normalizePrefix = (value) => {
     if (!value && value !== 0) return '';
@@ -159,7 +158,7 @@ export const deletePrefix = async (req, res) => {
         res.status(200).json({
             success: true,
             message: 'Prefix deleted successfully!',
-            data: deletedPrefix
+            data: deletedPrefix,
         });
     } catch (error) {
         console.error('Error deleting prefix:', error);
