@@ -50,6 +50,7 @@ export default function PrefixManager({
   const accessGranted = String(savedAccessKey || '').trim() === ACCESS_KEY;
   const hasSavedAccessKey = Boolean(String(savedAccessKey || '').trim());
   const accessKeyInputDisabled = hasSavedAccessKey && !isAccessKeyEditing;
+  const activeAccessKey = String(savedAccessKey || accessKey || '').trim();
 
   useEffect(() => {
     setAccessKey(savedAccessKey);
@@ -161,7 +162,7 @@ export default function PrefixManager({
       return;
     }
 
-    onAddPrefix(parsedPrefixes, accessKey);
+    onAddPrefix(parsedPrefixes, activeAccessKey);
     setNewPrefixInput('');
     setErrorMsg('');
     setShowAddForm(false);
@@ -191,7 +192,7 @@ export default function PrefixManager({
       return;
     }
 
-    const saved = await onEditPrefix(editId, cleanValue, accessKey);
+    const saved = await onEditPrefix(editId, cleanValue, activeAccessKey);
     if (saved) {
       setEditId(null);
       setEditDraft('');
@@ -444,7 +445,7 @@ export default function PrefixManager({
               <button
                 type="button"
                 onClick={async () => {
-                  await onDeletePrefix(deleteTarget);
+                  await onDeletePrefix(deleteTarget, activeAccessKey);
                   setDeleteTarget(null);
                 }}
                 className="px-3 py-2 bg-rose-500 text-white text-sm font-semibold rounded-lg hover:bg-rose-400"

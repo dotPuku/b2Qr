@@ -197,7 +197,7 @@ export default function App() {
 
     try {
       const response = await fetch(`${SERVER_URL}/update`, {
-        method: "PUT",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },

@@ -6,10 +6,18 @@ import 'dotenv/config';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
-const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
-    .split(',')
-    .map((origin) => origin.trim().replace(/\/$/, ''))
-    .filter(Boolean);
+const defaultAllowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'https://b2qr.vercel.app',
+];
+const allowedOrigins = [...new Set([
+    ...defaultAllowedOrigins,
+    ...(process.env.CLIENT_URL || '')
+        .split(',')
+        .map((origin) => origin.trim().replace(/\/$/, ''))
+        .filter(Boolean),
+])];
 
 const isAllowedOrigin = (origin) => {
     if (!origin) return true;
@@ -50,7 +58,7 @@ app.get('/health', (_req, res) => {
 
 app.route('/').get(getPrefix).post(addPrefix);
 app.route('/update').post(updatePrefix);
-app.route('/delete').post(deletePrefix).delete(deletePrefix);
+app.route('/delete').post(deletePrefix);
 
 const startServer = async () => {
     try {
