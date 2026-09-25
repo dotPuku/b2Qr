@@ -6,15 +6,21 @@ import 'dotenv/config';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
-const allowedOrigins = (process.env.CLIENT_URL || '')
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
     .split(',')
-    .map((origin) => origin.trim())
+    .map((origin) => origin.trim().replace(/\/$/, ''))
     .filter(Boolean);
+
+const isAllowedOrigin = (origin) => {
+    if (!origin) return true;
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    return allowedOrigins.some((allowed) => allowed === normalizedOrigin);
+};
 
 app.use(
     cors({
         origin: (origin, callback) => {
-            if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+            if (isAllowedOrigin(origin) || allowedOrigins.length === 0) {
                 callback(null, true);
                 return;
             }
@@ -22,10 +28,17 @@ app.use(
             callback(new Error('Not allowed by CORS'));
         },
         credentials: true,
+        methods: ['GET', 'POST', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
     })
 );
 
+app.options('*', cors());
 app.use(express.json());
+
+app.get('/health', (_req, res) => {
+    res.status(200).json({ success: true, status: 'ok' });
+});
 
 app.route('/').get(getPrefix).post(addPrefix);
 app.route('/delete').post(deletePrefix);
