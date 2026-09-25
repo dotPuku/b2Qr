@@ -22,7 +22,8 @@ export default function PrefixManager({
   const [editError, setEditError] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [menuAnchor, setMenuAnchor] = useState(null);
-  const [accessKey, setAccessKey] = useState(() => {
+  const [accessKey, setAccessKey] = useState('');
+  const [savedAccessKey, setSavedAccessKey] = useState(() => {
     try {
       return localStorage.getItem('access_key') || '';
     } catch {
@@ -33,7 +34,7 @@ export default function PrefixManager({
   const [showAccessKeyValue, setShowAccessKeyValue] = useState(false);
   const [accessKeyError, setAccessKeyError] = useState('');
 
-  const accessGranted = String(accessKey || '').trim() === ACCESS_KEY;
+  const accessGranted = String(savedAccessKey || '').trim() === ACCESS_KEY;
 
   useEffect(() => {
     if (!accessGranted) {
@@ -64,6 +65,8 @@ export default function PrefixManager({
     } catch {
     }
 
+    setSavedAccessKey(trimmed);
+    setAccessKey(trimmed);
     setAccessKeyError('');
     setShowAccessKeyValue(false);
     setShowAccessKeySection(false);
@@ -75,6 +78,7 @@ export default function PrefixManager({
     } catch {
     }
 
+    setSavedAccessKey('');
     setAccessKey('');
     setAccessKeyError('');
     setShowAccessKeyValue(false);
