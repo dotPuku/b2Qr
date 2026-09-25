@@ -14,8 +14,6 @@ import {
 } from 'lucide-react';
 import { formatPrefix, parsePrefixList } from '../utils/qrUtils';
 
-const ACCESS_KEY = 'B2QR';
-
 export default function PrefixManager({
   prefixes,
   activePrefix,
@@ -24,6 +22,7 @@ export default function PrefixManager({
   onEditPrefix,
   onDeletePrefix,
   onPrefixInputChange,
+  accessKey
 }) {
   const [newPrefixInput, setNewPrefixInput] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -47,7 +46,7 @@ export default function PrefixManager({
   const [accessKeyError, setAccessKeyError] = useState('');
   const [isAccessKeyEditing, setIsAccessKeyEditing] = useState(false);
 
-  const accessGranted = String(savedAccessKey || '').trim() === ACCESS_KEY;
+  const accessGranted = String(savedAccessKey || '').trim() === accessKey;
   const hasSavedAccessKey = Boolean(String(savedAccessKey || '').trim());
   const accessKeyActionLabel = hasSavedAccessKey && !isAccessKeyEditing ? 'Edit' : 'Save';
   const accessKeyInputDisabled = hasSavedAccessKey && !isAccessKeyEditing;
@@ -75,7 +74,7 @@ export default function PrefixManager({
       return;
     }
 
-    if (trimmed !== ACCESS_KEY) {
+    if (trimmed !== accessKey) {
       setAccessKeyError('Access key is invalid.');
       return;
     }
