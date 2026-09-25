@@ -264,6 +264,14 @@ export default function PrefixManager({
         </div>
       )}
 
+      {menuOpenId && (
+        <div
+          className="fixed inset-0 z-40 bg-transparent"
+          onClick={() => setMenuOpenId(null)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Grid of Saved Prefixes */}
       <div>
         <div className="flex items-center justify-between mb-3">
@@ -304,7 +312,7 @@ export default function PrefixManager({
                     ref={(node) => {
                       if (node) menuRefs.current[prefix._id] = node;
                     }}
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 z-20"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 z-[60]"
                   >
                     <button
                       type="button"
@@ -322,7 +330,7 @@ export default function PrefixManager({
                     </button>
 
                     {menuOpenId === prefix._id && (
-                      <div className="absolute right-0 top-full mt-2 w-40 rounded-xl border border-zinc-700 bg-zinc-900 shadow-2xl overflow-hidden z-50">
+                      <div className="absolute right-0 top-full mt-2 w-40 rounded-xl border border-zinc-700 bg-zinc-900 shadow-2xl overflow-hidden z-[70]">
                         <button
                           type="button"
                           onClick={(e) => {
