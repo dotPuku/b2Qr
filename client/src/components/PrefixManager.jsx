@@ -92,6 +92,7 @@ export default function PrefixManager({
     setAccessKey(trimmed);
     setAccessKeyError('');
     setShowAccessKeyValue(false);
+    setShowAccessKeySection(false);
     setIsAccessKeyEditing(false);
   };
 
