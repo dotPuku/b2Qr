@@ -48,8 +48,9 @@ app.get('/health', (_req, res) => {
     res.status(200).json({ success: true, status: 'ok' });
 });
 
-app.route('/').get(getPrefix).post(addPrefix).put(updatePrefix);
-app.route('/delete').post(deletePrefix);
+app.route('/').get(getPrefix).post(addPrefix);
+app.route('/update').post(updatePrefix);
+app.route('/delete').post(deletePrefix).delete(deletePrefix);
 
 const startServer = async () => {
     try {

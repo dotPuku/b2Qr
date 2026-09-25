@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Tag, Plus, Trash2, Check, Sparkles, MoreVertical, Pencil } from 'lucide-react';
 import { formatPrefix, parsePrefixList } from '../utils/qrUtils';
 
@@ -19,6 +19,21 @@ export default function PrefixManager({
   const [editDraft, setEditDraft] = useState('');
   const [editError, setEditError] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const menuRefs = useRef({});
+
+  useEffect(() => {
+    const closeMenus = (event) => {
+      if (!menuOpenId) return;
+
+      const activeMenu = menuRefs.current[menuOpenId];
+      if (activeMenu && !activeMenu.contains(event.target)) {
+        setMenuOpenId(null);
+      }
+    };
+
+    document.addEventListener('mousedown', closeMenus);
+    return () => document.removeEventListener('mousedown', closeMenus);
+  }, [menuOpenId]);
 
   const handleAddNew = (e) => {
     e.preventDefault();
@@ -44,7 +59,7 @@ export default function PrefixManager({
     setShowAddForm(false);
   };
 
-  const handleEditSave = (e) => {
+  const handleEditSave = async (e) => {
     e.preventDefault();
     const cleanValue = formatPrefix(editDraft);
 
@@ -62,15 +77,17 @@ export default function PrefixManager({
       return;
     }
 
-    onEditPrefix(editId, cleanValue);
-    setEditId(null);
-    setEditDraft('');
-    setEditError('');
-    setMenuOpenId(null);
+    const saved = await onEditPrefix(editId, cleanValue);
+    if (saved) {
+      setEditId(null);
+      setEditDraft('');
+      setEditError('');
+      setMenuOpenId(null);
+    }
   };
 
   return (
-    <div className="bg-[#1b1d24] border border-zinc-800/80 rounded-2xl p-5 sm:p-6 shadow-xl relative overflow-hidden">
+    <div className="bg-[#1b1d24] border border-zinc-800/80 rounded-2xl p-5 sm:p-6 shadow-xl relative overflow-visible">
       {/* Top bar with active input & actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 pb-4 border-b border-zinc-800">
         <div>
@@ -148,65 +165,101 @@ export default function PrefixManager({
       </div>
 
       {editId && (
-        <form onSubmit={handleEditSave} className="mb-5 p-4 rounded-xl bg-zinc-950 border border-zinc-700">
-          <div className="flex flex-col sm:flex-row gap-2">
-            <input
-              type="text"
-              value={editDraft}
-              onChange={(e) => {
-                setEditDraft(e.target.value);
-                setEditError('');
-              }}
-              className="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white uppercase focus:outline-none focus:border-[#00e676]"
-              autoFocus
-            />
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                className="px-3 py-2 bg-[#00e676] text-black text-sm font-semibold rounded-lg hover:bg-[#00c864]"
-              >
-                Save
-              </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl border border-zinc-700 bg-[#171a21] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm font-semibold text-zinc-200">Edit Prefix</p>
+                <p className="text-xs text-zinc-400">Update the selected prefix value</p>
+              </div>
               <button
                 type="button"
-                className="px-3 py-2 bg-zinc-800 text-zinc-200 text-sm font-semibold rounded-lg hover:bg-zinc-700"
                 onClick={() => {
                   setEditId(null);
                   setEditDraft('');
                   setEditError('');
                 }}
+                className="text-zinc-400 hover:text-white text-xl leading-none"
+                aria-label="Close edit dialog"
               >
-                Cancel
+                ×
               </button>
             </div>
+
+            <form onSubmit={handleEditSave} className="space-y-4">
+              <input
+                type="text"
+                value={editDraft}
+                onChange={(e) => {
+                  setEditDraft(e.target.value);
+                  setEditError('');
+                }}
+                className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white uppercase focus:outline-none focus:border-[#00e676] focus:ring-2 focus:ring-[#00e676]/20"
+                autoFocus
+              />
+
+              {editError && <p className="text-rose-400 text-xs">{editError}</p>}
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  className="px-3 py-2 bg-zinc-800 text-zinc-200 text-sm font-semibold rounded-lg hover:bg-zinc-700"
+                  onClick={() => {
+                    setEditId(null);
+                    setEditDraft('');
+                    setEditError('');
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-3 py-2 bg-[#00e676] text-black text-sm font-semibold rounded-lg hover:bg-[#00c864]"
+                >
+                  Save
+                </button>
+              </div>
+            </form>
           </div>
-          {editError && <p className="text-rose-400 text-xs mt-2">{editError}</p>}
-        </form>
+        </div>
       )}
 
       {deleteTarget && (
-        <div className="mb-5 p-4 rounded-xl border border-amber-500/40 bg-amber-500/10">
-          <p className="text-sm text-amber-200 font-medium">
-            Delete prefix <span className="font-mono text-white">{deleteTarget.prefix}</span>?
-          </p>
-          <div className="mt-3 flex gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                onDeletePrefix(deleteTarget);
-                setDeleteTarget(null);
-              }}
-              className="px-3 py-2 bg-rose-500 text-white text-sm font-semibold rounded-lg hover:bg-rose-400"
-            >
-              OK
-            </button>
-            <button
-              type="button"
-              onClick={() => setDeleteTarget(null)}
-              className="px-3 py-2 bg-zinc-800 text-zinc-200 text-sm font-semibold rounded-lg hover:bg-zinc-700"
-            >
-              Cancel
-            </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl border border-amber-500/40 bg-[#171a21] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="rounded-full bg-amber-500/15 p-2 text-amber-300">
+                <Trash2 className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-base font-semibold text-zinc-100">Delete Prefix</p>
+                <p className="text-xs text-zinc-400">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-zinc-200 mb-5">
+              Delete <span className="font-mono text-white">{deleteTarget.prefix}</span> from your saved prefix list?
+            </p>
+
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                className="px-3 py-2 bg-zinc-800 text-zinc-200 text-sm font-semibold rounded-lg hover:bg-zinc-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  await onDeletePrefix(deleteTarget);
+                  setDeleteTarget(null);
+                }}
+                className="px-3 py-2 bg-rose-500 text-white text-sm font-semibold rounded-lg hover:bg-rose-400"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -247,7 +300,12 @@ export default function PrefixManager({
                     {isSelected && <Sparkles className="w-3 h-3 flex-shrink-0" />}
                   </button>
 
-                  <div className="absolute right-1.5 top-1/2 -translate-y-1/2 z-10">
+                  <div
+                    ref={(node) => {
+                      if (node) menuRefs.current[prefix._id] = node;
+                    }}
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 z-20"
+                  >
                     <button
                       type="button"
                       onClick={(e) => {
@@ -264,7 +322,7 @@ export default function PrefixManager({
                     </button>
 
                     {menuOpenId === prefix._id && (
-                      <div className="absolute right-0 top-full mt-1.5 w-32 rounded-xl border border-zinc-700 bg-zinc-900 shadow-2xl overflow-hidden">
+                      <div className="absolute right-0 top-full mt-2 w-40 rounded-xl border border-zinc-700 bg-zinc-900 shadow-2xl overflow-hidden z-50">
                         <button
                           type="button"
                           onClick={(e) => {
@@ -274,7 +332,7 @@ export default function PrefixManager({
                             setEditError('');
                             setMenuOpenId(null);
                           }}
-                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                          className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-zinc-200 hover:bg-zinc-800"
                         >
                           <Pencil className="w-3.5 h-3.5 text-[#00e676]" />
                           Edit
@@ -286,7 +344,7 @@ export default function PrefixManager({
                             setDeleteTarget(prefix);
                             setMenuOpenId(null);
                           }}
-                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                          className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-zinc-200 hover:bg-zinc-800"
                         >
                           <Trash2 className="w-3.5 h-3.5 text-rose-400" />
                           Delete

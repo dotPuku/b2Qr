@@ -159,7 +159,7 @@ export default function App() {
         type: "error",
         message: "Please enter a valid prefix",
       });
-      return;
+      return false;
     }
 
     const duplicate = prefixes.some(
@@ -171,12 +171,12 @@ export default function App() {
         type: "error",
         message: `Prefix "${normalized}" already exists`,
       });
-      return;
+      return false;
     }
 
     try {
-      const response = await fetch(SERVER_URL, {
-        method: "PUT",
+      const response = await fetch(`${SERVER_URL}/update`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -206,18 +206,21 @@ export default function App() {
           type: "success",
           message: `Prefix updated to "${normalized}"`,
         });
-      } else {
-        setToast({
-          type: "error",
-          message: data.message || "Failed to update prefix",
-        });
+        return true;
       }
+
+      setToast({
+        type: "error",
+        message: data.message || "Failed to update prefix",
+      });
+      return false;
     } catch (error) {
       console.error("Edit prefix error:", error);
       setToast({
         type: "error",
         message: "Could not update prefix",
       });
+      return false;
     }
   };
 
