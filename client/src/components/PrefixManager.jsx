@@ -50,8 +50,8 @@ export default function PrefixManager({
 
     try {
       localStorage.setItem('access_key', trimmed);
-    } catch (error) {
-      console.error('Failed to save access key', error);
+    } catch {
+      // ignore storage write issues in restricted environments
     }
 
     setAccessKeyError('');
@@ -62,8 +62,8 @@ export default function PrefixManager({
   const clearSavedAccessKey = () => {
     try {
       localStorage.removeItem('access_key');
-    } catch (error) {
-      console.error('Failed to clear access key', error);
+    } catch {
+      // ignore storage removal issues in restricted environments
     }
 
     setAccessKey('');
