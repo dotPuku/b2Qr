@@ -9,7 +9,7 @@ import {
   formatPrefix,
 } from './utils/qrUtils';
 
-const ACCESS_KEY = 'B2QR';
+const ACCESS_KEY = 'ATANU04@#';
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
 const isAccessKeyValid = (value) => {
