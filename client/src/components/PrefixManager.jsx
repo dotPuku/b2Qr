@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { Tag, Plus, Trash2, Check, Sparkles, MoreVertical, Pencil } from 'lucide-react';
 import { formatPrefix, parsePrefixList } from '../utils/qrUtils';
 
-const ENV_ACCESS_KEY = (import.meta.env.VITE_ACCESS_KEY || '').trim();
-
 export default function PrefixManager({
   prefixes,
   activePrefix,
@@ -12,6 +10,7 @@ export default function PrefixManager({
   onEditPrefix,
   onDeletePrefix,
   onPrefixInputChange,
+  accessKey
 }) {
   const [newPrefixInput, setNewPrefixInput] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -22,9 +21,55 @@ export default function PrefixManager({
   const [editError, setEditError] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [menuAnchor, setMenuAnchor] = useState(null);
-  const [accessKey, setAccessKey] = useState('');
+  const [accessKey, setAccessKey] = useState(() => {
+    try {
+      return localStorage.getItem('accessKey') || '';
+    } catch {
+      return '';
+    }
+  });
+  const [showAccessKeySection, setShowAccessKeySection] = useState(false);
+  const [showAccessKeyValue, setShowAccessKeyValue] = useState(false);
+  const [accessKeyError, setAccessKeyError] = useState('');
 
-  const accessGranted = Boolean(ENV_ACCESS_KEY) && accessKey.trim() === ENV_ACCESS_KEY;
+  const accessGranted = String(accessKey || '').trim() === accessKey;
+
+  const saveAccessKey = () => {
+    const trimmed = String(accessKey || '').trim();
+
+    if (!trimmed) {
+      setAccessKeyError('Please enter the access key first.');
+      return;
+    }
+
+    if (trimmed !== accessKey) {
+      setAccessKeyError('Access key is invalid.');
+      return;
+    }
+
+    try {
+      localStorage.setItem('accessKey', trimmed);
+    } catch (error) {
+      console.error('Failed to save access key', error);
+    }
+
+    setAccessKeyError('');
+    setShowAccessKeyValue(false);
+    setShowAccessKeySection(false);
+  };
+
+  const clearSavedAccessKey = () => {
+    try {
+      localStorage.removeItem('accessKey');
+    } catch (error) {
+      console.error('Failed to clear access key', error);
+    }
+
+    setAccessKey('');
+    setAccessKeyError('');
+    setShowAccessKeyValue(false);
+    setShowAccessKeySection(true);
+  };
 
   const closeMenu = () => {
     setMenuOpenId(null);
@@ -50,7 +95,7 @@ export default function PrefixManager({
     e.preventDefault();
 
     if (!accessGranted) {
-      setErrorMsg('Access key does not match the configured .env value.');
+      setErrorMsg('Access key is invalid.');
       return;
     }
 
@@ -80,7 +125,7 @@ export default function PrefixManager({
     e.preventDefault();
 
     if (!accessGranted) {
-      setEditError('Access key does not match the configured .env value.');
+      setEditError('Access key is invalid.');
       return;
     }
 
@@ -138,38 +183,74 @@ export default function PrefixManager({
         </button>
       </div>
 
-      <div className="mb-5 p-4 rounded-xl border border-zinc-700 bg-zinc-900/80">
-        <label className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-400 mb-2">
-          Access Key
-        </label>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <input
-            type="password"
-            value={accessKey}
-            onChange={(e) => {
-              setAccessKey(e.target.value);
-              setErrorMsg('');
-            }}
-            placeholder="Enter access key"
-            className="flex-1 bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#00e676] focus:ring-1 focus:ring-[#00e676]"
-          />
-          <button
-            type="button"
-            onClick={() => {
-              setAccessKey('');
-              setErrorMsg('Access key cleared.');
-            }}
-            className="px-3 py-2 bg-rose-500/15 text-rose-300 border border-rose-400/30 text-sm font-semibold rounded-lg hover:bg-rose-500/20"
-          >
-            Clear
-          </button>
-        </div>
-        {!accessGranted && (
-          <p className="text-[11px] text-amber-300 mt-2">
-            Use the same value as VITE_ACCESS_KEY in your .env file to unlock prefix management.
-          </p>
-        )}
+      <div className="mb-5 flex justify-end">
+        <button
+          type="button"
+          onClick={() => setShowAccessKeySection((prev) => !prev)}
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-900/80 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-200 hover:border-[#00e676]/50 hover:text-[#00e676] transition-colors"
+        >
+          {showAccessKeySection ? 'Hide Access Key' : 'Access Key'}
+        </button>
       </div>
+
+      {showAccessKeySection && (
+        <div className="mb-5 p-4 rounded-xl border border-zinc-700 bg-zinc-900/80">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <label className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-400">
+              Access Key
+            </label>
+            {accessKey && (
+              <button
+                type="button"
+                onClick={() => setShowAccessKeyValue((prev) => !prev)}
+                className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-300 hover:text-white"
+              >
+                {showAccessKeyValue ? 'Hide' : 'Show'}
+              </button>
+            )}
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type={showAccessKeyValue ? 'text' : 'password'}
+              value={accessKey}
+              onChange={(e) => {
+                setAccessKey(e.target.value);
+                setAccessKeyError('');
+                setErrorMsg('');
+              }}
+              placeholder="Enter access key"
+              className="flex-1 bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#00e676] focus:ring-1 focus:ring-[#00e676]"
+            />
+            <button
+              type="button"
+              onClick={saveAccessKey}
+              className="px-3 py-2 bg-[#00e676] text-black text-sm font-semibold rounded-lg hover:bg-[#00c864]"
+            >
+              Save
+            </button>
+            {accessKey && (
+              <button
+                type="button"
+                onClick={clearSavedAccessKey}
+                className="px-3 py-2 bg-rose-500/15 text-rose-300 border border-rose-400/30 text-sm font-semibold rounded-lg hover:bg-rose-500/20"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
+          {accessKeyError && (
+            <p className="text-[11px] text-rose-300 mt-2">{accessKeyError}</p>
+          )}
+
+          {!accessGranted && !accessKeyError && (
+            <p className="text-[11px] text-amber-300 mt-2">
+              Use the correct hard-coded access key to unlock prefix management.
+            </p>
+          )}
+        </div>
+      )}
 
       {showAddForm && (
         <form onSubmit={handleAddNew} className="mb-5 p-4 rounded-xl bg-zinc-900/90 border border-zinc-700/60 transition-all">
@@ -405,7 +486,7 @@ export default function PrefixManager({
                       type="button"
                       onClick={(e) => {
                         if (!accessGranted) {
-                          setErrorMsg('Access key does not match the configured .env value.');
+                          setErrorMsg('Access key is invalid.');
                           return;
                         }
                         openMenuForPrefix(e, prefix);

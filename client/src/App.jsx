@@ -9,11 +9,11 @@ import {
   formatPrefix,
 } from './utils/qrUtils';
 
-const ENV_ACCESS_KEY = (import.meta.env.VITE_ACCESS_KEY || '').trim();
+const ACCESS_KEY = 'B2QR';
 const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
 const isAccessKeyValid = (value) => {
-  return Boolean(ENV_ACCESS_KEY) && String(value || '').trim() === ENV_ACCESS_KEY;
+  return String(value || '').trim() === ACCESS_KEY;
 };
 
 export default function App() {
@@ -53,18 +53,10 @@ export default function App() {
   const [toast, setToast] = useState(null);
 
   const handleAddPrefix = async (newPrefix, accessKey) => {
-    if (!ENV_ACCESS_KEY) {
-      setToast({
-        type: 'error',
-        message: 'Access key is not configured in your .env file.',
-      });
-      return;
-    }
-
     if (!isAccessKeyValid(accessKey)) {
       setToast({
         type: 'error',
-        message: 'Access key does not match the configured .env value.',
+        message: 'Access key is invalid.',
       });
       return;
     }
@@ -173,18 +165,10 @@ export default function App() {
   };
 
   const handleEditPrefix = async (prefixId, newPrefixValue, accessKey) => {
-    if (!ENV_ACCESS_KEY) {
-      setToast({
-        type: 'error',
-        message: 'Access key is not configured in your .env file.',
-      });
-      return false;
-    }
-
     if (!isAccessKeyValid(accessKey)) {
       setToast({
         type: 'error',
-        message: 'Access key does not match the configured .env value.',
+        message: 'Access key is invalid.',
       });
       return false;
     }
@@ -261,18 +245,10 @@ export default function App() {
   };
 
   const handleDeletePrefix = async (prefixToDelete, accessKey) => {
-    if (!ENV_ACCESS_KEY) {
-      setToast({
-        type: 'error',
-        message: 'Access key is not configured in your .env file.',
-      });
-      return;
-    }
-
     if (!isAccessKeyValid(accessKey)) {
       setToast({
         type: 'error',
-        message: 'Access key does not match the configured .env value.',
+        message: 'Access key is invalid.',
       });
       return;
     }
@@ -362,6 +338,7 @@ export default function App() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <div className="lg:col-span-7 space-y-6">
             <PrefixManager
+              accessKey={ACCESS_KEY}
               prefixes={prefixes}
               activePrefix={activePrefix}
               onSelectPrefix={handleSelectPrefix}
