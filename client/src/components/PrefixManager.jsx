@@ -29,10 +29,15 @@ export default function PrefixManager({
   const openMenuForPrefix = (event, prefix) => {
     event.stopPropagation();
     const rect = event.currentTarget.getBoundingClientRect();
+    const menuWidth = 160;
+    const padding = 12;
+    const maxX = window.innerWidth - menuWidth - padding;
+    const maxY = window.innerHeight - 140;
+
     setMenuOpenId(prefix._id);
     setMenuAnchor({
-      x: rect.right - 8,
-      y: rect.bottom + 8,
+      x: Math.min(Math.max(padding, rect.right - 16), maxX),
+      y: Math.min(Math.max(padding, rect.bottom + 8), maxY),
     });
   };
 
@@ -349,13 +354,13 @@ export default function PrefixManager({
                     <button
                       type="button"
                       onClick={(e) => openMenuForPrefix(e, prefix)}
-                      className={`p-1.5 rounded-md transition-all cursor-pointer ${isSelected
+                      className={`p-2 sm:p-1.5 rounded-md transition-all cursor-pointer ${isSelected
                         ? 'text-zinc-900/70 hover:text-zinc-950 hover:bg-black/10'
                         : 'text-zinc-400 hover:text-white hover:bg-zinc-900/80'}
                       `}
                       title={`Options for ${prefix.prefix}`}
                     >
-                      <MoreVertical className="w-3.5 h-3.5" />
+                      <MoreVertical className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                     </button>
                   </div>
                 </div>
