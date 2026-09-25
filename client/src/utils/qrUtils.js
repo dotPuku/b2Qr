@@ -9,6 +9,18 @@ export function generateRandomDigits(count) {
   return result;
 }
 
+export function generateRandomLetters(count) {
+  const length = Math.max(1, Math.min(Number(count) || 1, 32));
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let result = '';
+
+  for (let i = 0; i < length; i++) {
+    result += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+
+  return result;
+}
+
 export function formatPrefix(str) {
   if (!str) return '';
   return String(str).toUpperCase().trim();
@@ -21,22 +33,29 @@ export function buildGeneratedCode(prefixValue) {
     return '';
   }
 
-  const pattern = /\[(\d+)\]/g;
-  const matches = [...prefix.matchAll(pattern)];
-
-  if (!matches.length) {
-    return prefix;
-  }
+  const patterns = [
+    { regex: /\[(\d+)\]/g, generator: generateRandomDigits },
+    { regex: /\((\d+)\)/g, generator: generateRandomLetters },
+  ];
 
   let result = prefix;
+  let foundPattern = false;
 
-  matches.forEach((match) => {
-    const patternLength = Number(match[1]);
-    const replacement = generateRandomDigits(patternLength);
-    result = result.replace(match[0], replacement);
+  patterns.forEach(({ regex, generator }) => {
+    const matches = [...result.matchAll(regex)];
+
+    if (matches.length) {
+      foundPattern = true;
+    }
+
+    matches.forEach((match) => {
+      const patternLength = Number(match[1]);
+      const replacement = generator(patternLength);
+      result = result.replace(match[0], replacement);
+    });
   });
 
-  if (result === prefix && !/\[\d+\]/.test(prefix)) {
+  if (!foundPattern) {
     return prefix;
   }
 
