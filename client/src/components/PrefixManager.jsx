@@ -253,32 +253,33 @@ export default function PrefixManager({
             <label className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-400">
               Access Key
             </label>
-            {accessKey && (
-              <button
-                type="button"
-                onClick={() => setShowAccessKeyValue((prev) => !prev)}
-                className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-300 hover:text-white"
-                aria-label={showAccessKeyValue ? 'Hide access key' : 'Show access key'}
-              >
-                {showAccessKeyValue ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                <span>{showAccessKeyValue ? 'Hide' : 'Show'}</span>
-              </button>
-            )}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2">
-            <input
-              type={showAccessKeyValue ? 'text' : 'password'}
-              value={accessKey}
-              disabled={accessKeyInputDisabled}
-              onChange={(e) => {
-                setAccessKey(e.target.value);
-                setAccessKeyError('');
-                setErrorMsg('');
-              }}
-              placeholder="Enter access key"
-              className="flex-1 bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#00e676] focus:ring-1 focus:ring-[#00e676] disabled:cursor-not-allowed disabled:opacity-60"
-            />
+            <div className="relative flex-1">
+              <input
+                type={showAccessKeyValue ? 'text' : 'password'}
+                value={accessKey}
+                disabled={accessKeyInputDisabled}
+                onChange={(e) => {
+                  setAccessKey(e.target.value);
+                  setAccessKeyError('');
+                  setErrorMsg('');
+                }}
+                placeholder="Enter access key"
+                className="w-full bg-zinc-950 border border-zinc-700 rounded-lg pl-3 pr-10 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#00e676] focus:ring-1 focus:ring-[#00e676] disabled:cursor-not-allowed disabled:opacity-60"
+              />
+              {accessKey && (
+                <button
+                  type="button"
+                  onClick={() => setShowAccessKeyValue((prev) => !prev)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors"
+                  aria-label={showAccessKeyValue ? 'Hide access key' : 'Show access key'}
+                >
+                  {showAccessKeyValue ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              )}
+            </div>
             <button
               type="button"
               onClick={handleAccessKeyAction}
