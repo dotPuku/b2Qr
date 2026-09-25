@@ -31,15 +31,6 @@ const normalizeEntry = (entry) => {
 
 export const getPrefix = async (req, res) => {
     try {
-        const preparedData = [
-            { name: 'BB Now', code: 'BB[10]' }, { name: 'PBS', code: 'PBS-[10]' }, { name: 'PBM', code: 'PBM-[10]' },
-            { name: 'PBHM', code: 'PBHM-[10]' }, { name: 'PBL', code: 'PBL-[10]' }, { name: 'INSULATED', code: 'GP25-IN-IBG-C[4]' },
-            { name: 'PCM PAD', code: 'PCM-BLU-SM-E[4]' }, { name: 'CRATE', code: 'BN[2]-PO01' }, { name: 'SB-IFC', code: 'SB-IFC-123456' },
-            { name: 'COMP MED', code: 'CBM-[10]' }, { name: 'COMP LARGE', code: 'CBL-[10]' }, { name: 'BULK CREATE', code: 'GP25-KL-BC-(1)[4]' },
-            { name: 'COMP HAZARD', code: 'CBHM-[10]' }
-        ];
-
-        await Prefix.insertMany(preparedData);
         const prefixes = await Prefix.find();
 
         res.status(200).json({
