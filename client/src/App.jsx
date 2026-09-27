@@ -234,8 +234,9 @@ export default function App() {
         );
 
         if (activePrefix === oldValue) {
+          newFullCode = buildGeneratedCode(normalizedCode)
           setActivePrefix(normalizedCode);
-          setInputValue(normalizedCode);
+          setInputValue(newFullCode);
           generateNewCode(normalizedCode, true);
         }
 
@@ -367,8 +368,6 @@ export default function App() {
             <CodeInputSection
               inputValue={inputValue}
               setInputValue={setInputValue}
-              onGenerateNew={() => generateNewCode(inputValue, true)}
-              isGenerateDisabled={!inputValue.trim()}
               onCopyText={handleCopyText}
               hasCopied={hasCopied}
             />

@@ -1,17 +1,13 @@
 import {
-  RefreshCw,
   Copy,
   Check,
   Edit3,
   Trash,
-  Sparkles,
 } from 'lucide-react';
 
 export default function CodeInputSection({
   inputValue,
   setInputValue,
-  onGenerateNew,
-  isGenerateDisabled,
   onCopyText,
   hasCopied,
 }) {
@@ -138,46 +134,6 @@ export default function CodeInputSection({
         </div>
       </div>
 
-      {/* Generate Button */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-        <button
-          type="button"
-          onClick={onGenerateNew}
-          disabled={isGenerateDisabled}
-          className="
-            flex-1
-            flex
-            items-center
-            justify-center
-            gap-2.5
-            py-3.5
-            px-6
-            rounded-xl
-            font-bold
-            text-base
-            bg-[#00e676]
-            hover:bg-[#00c864]
-            text-zinc-950
-            transition-all
-            duration-200
-            transform
-            active:scale-[0.98]
-            shadow-[0_4px_20px_rgba(0,230,118,0.35)]
-            hover:shadow-[0_6px_25px_rgba(0,230,118,0.5)]
-            cursor-pointer
-            disabled:opacity-40
-            disabled:cursor-not-allowed
-          "
-        >
-          <RefreshCw className="w-5 h-5 transition-transform hover:rotate-180 duration-500" />
-
-          <span>
-            Generate
-          </span>
-
-          <Sparkles className="w-4 h-4 text-zinc-900" />
-        </button>
-      </div>
     </div>
   );
 }
