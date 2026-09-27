@@ -18,9 +18,8 @@ export default function CodeInputSection({
   const handleInputChange = (e) => {
     const value = e.target.value.toUpperCase();
 
-    // IMPORTANT:
-    // Only update the input.
-    // Do NOT generate QR/code here.
+    // Update input only.
+    // App.jsx will synchronize the QR with the exact full text.
     setInputValue(value);
   };
 
@@ -79,7 +78,6 @@ export default function CodeInputSection({
         {/* Input Actions */}
         <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
 
-          {/* Clear */}
           {inputValue && (
             <button
               type="button"
@@ -99,7 +97,6 @@ export default function CodeInputSection({
             </button>
           )}
 
-          {/* Copy */}
           <button
             type="button"
             onClick={onCopyText}
@@ -137,10 +134,7 @@ export default function CodeInputSection({
             ) : (
               <>
                 <Copy className="w-3.5 h-3.5" />
-
-                <span>
-                  Copy
-                </span>
+                <span>Copy</span>
               </>
             )}
           </button>
@@ -176,8 +170,6 @@ export default function CodeInputSection({
             cursor-pointer
             disabled:opacity-40
             disabled:cursor-not-allowed
-            disabled:hover:bg-[#00e676]
-            disabled:hover:shadow-[0_4px_20px_rgba(0,230,118,0.35)]
           "
         >
           <RefreshCw className="w-5 h-5 transition-transform hover:rotate-180 duration-500" />
