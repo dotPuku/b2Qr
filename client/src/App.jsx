@@ -152,9 +152,7 @@ export default function App() {
 
   const generateNewCode = useCallback(
     (prefixToUse = activePrefix, notify = true) => {
-      const source = generationMode === 'code'
-        ? inputValue || prefixToUse || 'CODE'
-        : prefixToUse || inputValue || 'CODE';
+      const source = inputValue || prefixToUse || 'CODE';
       const combined = buildGeneratedCode(source, generationMode);
 
       setFullText(combined);
@@ -406,11 +404,6 @@ export default function App() {
               onFullTextChange={(val) => {
                 const cleanValue = val.toUpperCase();
                 setInputValue(cleanValue);
-                const generatedValue = generationMode === 'code'
-                  ? buildGeneratedCode(cleanValue, generationMode)
-                  : cleanValue;
-                setFullText(generatedValue);
-                addToHistory(generatedValue);
               }}
               onGenerateNew={() => generateNewCode(activePrefix, true)}
               onCopyText={handleCopyText}
