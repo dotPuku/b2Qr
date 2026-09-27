@@ -382,16 +382,6 @@ export default function App() {
     });
   };
 
-  const handleInputChange = (value) => {
-    const cleanValue = formatCode(value);
-    const matchingPrefix = prefixes.find((prefix) => prefix.code === cleanValue);
-
-    setInputValue(cleanValue);
-    if (matchingPrefix) {
-      setActivePrefix(matchingPrefix.code);
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col justify-between py-6 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
       <Toast toast={toast} onClose={() => setToast(null)} />
@@ -411,7 +401,10 @@ export default function App() {
               inputValue={inputValue}
               generationMode={generationMode}
               onGenerationModeChange={handleGenerationModeChange}
-              onFullTextChange={handleInputChange}
+              onFullTextChange={(val) => {
+                const cleanValue = val.toUpperCase();
+                setInputValue(cleanValue);
+              }}
               onGenerateNew={() => generateNewCode(activePrefix, true)}
               onCopyText={handleCopyText}
               hasCopied={hasCopied}
