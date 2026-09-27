@@ -360,6 +360,7 @@ export default function App() {
             <CodeInputSection
               fullText={fullText}
               inputValue={inputValue}
+              setInputValue={setInputValue}
               onFullTextChange={(val) => {
                 setInputValue(val);
               }}

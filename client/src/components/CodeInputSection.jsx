@@ -3,6 +3,7 @@ import { RefreshCw, Copy, Check, Edit3, Trash, Sparkles } from 'lucide-react';
 export default function CodeInputSection({
   fullText,
   inputValue,
+  setInputValue,
   onFullTextChange,
   onGenerateNew,
   isGenerateDisabled,
@@ -31,7 +32,7 @@ export default function CodeInputSection({
           {inputValue && (
             <button
               type="button"
-              onClick={() => onFullTextChange('')}
+              onClick={() => setInputValue('')}
               title="Clear input"
               className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-zinc-800 transition-colors cursor-pointer"
             >
