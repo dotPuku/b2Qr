@@ -34,23 +34,11 @@ export function formatCode(str) {
     .replace(/\s+/g, '');
 }
 
-export function buildCodeTemplate(prefixValue) {
-  return formatCode(prefixValue || 'CODE').trim();
-}
-
-export function buildNumbersCode(prefixValue) {
-  return formatCode(prefixValue || 'CODE').trim();
-}
-
-export function buildGeneratedCode(prefixValue, mode = 'code') {
+export function buildGeneratedCode(prefixValue) {
   const prefix = formatCode(prefixValue || 'CODE').trim();
 
   if (!prefix) {
     return '';
-  }
-
-  if (mode === 'numbers') {
-    return prefix;
   }
 
   const patterns = [

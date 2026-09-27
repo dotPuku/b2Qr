@@ -2,9 +2,6 @@ import { RefreshCw, Copy, Check, Edit3, Trash, Sparkles } from 'lucide-react';
 
 export default function CodeInputSection({
   fullText,
-  inputValue,
-  generationMode,
-  onGenerationModeChange,
   onFullTextChange,
   onGenerateNew,
   onCopyText,
@@ -19,32 +16,12 @@ export default function CodeInputSection({
         </div>
       </div>
 
-      <div className="mb-4 grid grid-cols-2 gap-1 rounded-xl border border-zinc-700 bg-zinc-950/80 p-1">
-        {[
-          { value: 'code', label: 'USING CODE' },
-          { value: 'numbers', label: 'USING NUMBERS' },
-        ].map((mode) => (
-          <button
-            key={mode.value}
-            type="button"
-            onClick={() => onGenerationModeChange(mode.value)}
-            aria-pressed={generationMode === mode.value}
-            className={`rounded-lg px-3 py-2 text-xs font-bold tracking-wide transition-colors cursor-pointer ${generationMode === mode.value
-              ? 'bg-[#00e676] text-zinc-950 shadow-[0_0_12px_rgba(0,230,118,0.25)]'
-              : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'}
-            `}
-          >
-            {mode.label}
-          </button>
-        ))}
-      </div>
-
       <div className="relative mb-4">
         <input
           type="text"
-          value={inputValue}
+          value={fullText}
           onChange={(e) => onFullTextChange(e.target.value.toUpperCase())}
-          placeholder={generationMode === 'code' ? 'e.g. PBHM-[10]' : 'e.g. PBHM-6405034417'}
+          placeholder="e.g. PBHM-6405034417"
           className="w-full bg-zinc-950/90 border-2 border-zinc-700/80 hover:border-zinc-600 focus:border-[#00e676] rounded-xl px-4 py-3.5 pr-28 text-white font-mono text-lg sm:text-xl font-bold tracking-wider uppercase focus:outline-none focus:ring-4 focus:ring-[#00e676]/15 transition-all text-center sm:text-left"
         />
 
