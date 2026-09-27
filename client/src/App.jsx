@@ -54,6 +54,7 @@ export default function App() {
 
   const [activePrefix, setActivePrefix] = useState('');
   const [fullText, setFullText] = useState('');
+  const [inputValue, setInputValue] = useState('');
   const [history, setHistory] = useState([]);
   const [hasCopied, setHasCopied] = useState(false);
   const [toast, setToast] = useState(null);
@@ -143,8 +144,8 @@ export default function App() {
   }, []);
 
   const generateNewCode = useCallback(
-    (prefixToUse = activePrefix, notify = true) => {
-      const prefix = formatCode(prefixToUse || 'CODE').trim();
+    (valueToGenerate = inputValue || activePrefix, notify = true) => {
+      const prefix = formatCode(valueToGenerate || 'CODE').trim();
       const combined = buildGeneratedCode(prefix);
 
       setFullText(combined);
@@ -158,12 +159,13 @@ export default function App() {
       }
       return combined;
     },
-    [activePrefix, addToHistory]
+    [activePrefix, addToHistory, inputValue]
   );
 
   const handleSelectPrefix = (prefix) => {
     const cleanPrefix = formatCode(prefix);
     setActivePrefix(cleanPrefix);
+    setInputValue(cleanPrefix);
     generateNewCode(cleanPrefix, true);
   };
 
@@ -226,6 +228,7 @@ export default function App() {
 
         if (activePrefix === oldValue) {
           setActivePrefix(normalizedCode);
+          setInputValue(normalizedCode);
           generateNewCode(normalizedCode, true);
         }
 
@@ -285,8 +288,10 @@ export default function App() {
           setActivePrefix(nextActive);
 
           if (nextActive) {
+            setInputValue(nextActive);
             generateNewCode(nextActive, false);
           } else {
+            setInputValue('');
             setFullText("");
           }
         }
@@ -329,6 +334,7 @@ export default function App() {
 
   const handleSelectRecent = (code) => {
     const upper = code.toUpperCase();
+    setInputValue(upper);
     setFullText(upper);
 
     setToast({
@@ -353,11 +359,12 @@ export default function App() {
             />
             <CodeInputSection
               fullText={fullText}
+              inputValue={inputValue}
               onFullTextChange={(val) => {
-                setFullText(val);
-                addToHistory(val);
+                setInputValue(val);
               }}
-              onGenerateNew={() => generateNewCode(activePrefix, true)}
+              onGenerateNew={() => generateNewCode(inputValue, true)}
+              isGenerateDisabled={!inputValue.trim() || !activePrefix}
               onCopyText={handleCopyText}
               hasCopied={hasCopied}
             />

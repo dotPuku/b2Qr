@@ -2,8 +2,10 @@ import { RefreshCw, Copy, Check, Edit3, Trash, Sparkles } from 'lucide-react';
 
 export default function CodeInputSection({
   fullText,
+  inputValue,
   onFullTextChange,
   onGenerateNew,
+  isGenerateDisabled,
   onCopyText,
   hasCopied,
 }) {
@@ -19,14 +21,14 @@ export default function CodeInputSection({
       <div className="relative mb-4">
         <input
           type="text"
-          value={fullText}
+          value={inputValue}
           onChange={(e) => onFullTextChange(e.target.value.toUpperCase())}
           placeholder="e.g. PBHM-6405034417"
           className="w-full bg-zinc-950/90 border-2 border-zinc-700/80 hover:border-zinc-600 focus:border-[#00e676] rounded-xl px-4 py-3.5 pr-28 text-white font-mono text-lg sm:text-xl font-bold tracking-wider uppercase focus:outline-none focus:ring-4 focus:ring-[#00e676]/15 transition-all text-center sm:text-left"
         />
 
         <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-          {fullText && (
+          {inputValue && (
             <button
               type="button"
               onClick={() => onFullTextChange('')}
@@ -63,7 +65,8 @@ export default function CodeInputSection({
         <button
           type="button"
           onClick={onGenerateNew}
-          className="flex-1 flex items-center justify-center gap-2.5 py-3.5 px-6 rounded-xl font-bold text-base bg-[#00e676] hover:bg-[#00c864] text-zinc-950 transition-all duration-200 transform active:scale-[0.98] shadow-[0_4px_20px_rgba(0,230,118,0.35)] hover:shadow-[0_6px_25px_rgba(0,230,118,0.5)] cursor-pointer"
+          disabled={isGenerateDisabled}
+          className="flex-1 flex items-center justify-center gap-2.5 py-3.5 px-6 rounded-xl font-bold text-base bg-[#00e676] hover:bg-[#00c864] text-zinc-950 transition-all duration-200 transform active:scale-[0.98] shadow-[0_4px_20px_rgba(0,230,118,0.35)] hover:shadow-[0_6px_25px_rgba(0,230,118,0.5)] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-[#00e676] disabled:hover:shadow-[0_4px_20px_rgba(0,230,118,0.35)]"
         >
           <RefreshCw className="w-5 h-5 transition-transform hover:rotate-180 duration-500" />
           <span>Generate New QR Code</span>
