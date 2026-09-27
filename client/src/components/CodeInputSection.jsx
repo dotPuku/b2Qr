@@ -1,10 +1,8 @@
 import { RefreshCw, Copy, Check, Edit3, Trash, Sparkles } from 'lucide-react';
 
 export default function CodeInputSection({
-  fullText,
   inputValue,
   setInputValue,
-  onFullTextChange,
   onGenerateNew,
   isGenerateDisabled,
   onCopyText,
@@ -23,7 +21,7 @@ export default function CodeInputSection({
         <input
           type="text"
           value={inputValue}
-          onChange={(e) => onFullTextChange(e.target.value.toUpperCase())}
+          onChange={(e) => (setInputValue(e.target.value.toUpperCase()), onGenerateNew)}
           placeholder="e.g. BB-[10] OR BB-6405034417"
           className="w-full bg-zinc-950/90 border-2 border-zinc-700/80 hover:border-zinc-600 focus:border-[#00e676] rounded-xl px-4 py-3.5 pr-28 text-white font-mono text-lg sm:text-xl font-bold tracking-wider uppercase focus:outline-none focus:ring-4 focus:ring-[#00e676]/15 transition-all text-center sm:text-left"
         />

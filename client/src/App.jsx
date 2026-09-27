@@ -164,8 +164,9 @@ export default function App() {
 
   const handleSelectPrefix = (prefix) => {
     const cleanPrefix = formatCode(prefix);
+    const combined = buildGeneratedCode(cleanPrefix);
     setActivePrefix(cleanPrefix);
-    setInputValue(cleanPrefix);
+    setInputValue(combined);
     generateNewCode(cleanPrefix, true);
   };
 
@@ -358,12 +359,8 @@ export default function App() {
               onDeletePrefix={handleDeletePrefix}
             />
             <CodeInputSection
-              fullText={fullText}
               inputValue={inputValue}
               setInputValue={setInputValue}
-              onFullTextChange={(val) => {
-                setInputValue(val);
-              }}
               onGenerateNew={() => generateNewCode(inputValue, true)}
               isGenerateDisabled={!inputValue.trim()}
               onCopyText={handleCopyText}
