@@ -6,6 +6,8 @@ import RecentHistory from './components/RecentHistory';
 import Toast from './components/Toast';
 import {
   buildGeneratedCode,
+  buildCodeTemplate,
+  buildNumbersCode,
   formatCode,
   formatName,
 } from './utils/qrUtils';
@@ -54,6 +56,8 @@ export default function App() {
 
   const [activePrefix, setActivePrefix] = useState('');
   const [fullText, setFullText] = useState('');
+  const [inputValue, setInputValue] = useState('');
+  const [generationMode, setGenerationMode] = useState('numbers');
   const [history, setHistory] = useState([]);
   const [hasCopied, setHasCopied] = useState(false);
   const [toast, setToast] = useState(null);
@@ -113,7 +117,11 @@ export default function App() {
         });
 
         setActivePrefix(savedPrefix.code);
-        generateNewCode(savedPrefix.code, true);
+        const nextInput = generationMode === 'code'
+          ? buildCodeTemplate(savedPrefix.code)
+          : buildNumbersCode(savedPrefix.code);
+        setInputValue(nextInput);
+        setFullText(buildGeneratedCode(nextInput, generationMode));
 
         setToast({
           type: 'success',
@@ -144,10 +152,15 @@ export default function App() {
 
   const generateNewCode = useCallback(
     (prefixToUse = activePrefix, notify = true) => {
-      const prefix = formatCode(prefixToUse || 'CODE').trim();
-      const combined = buildGeneratedCode(prefix);
+      const source = generationMode === 'code'
+        ? inputValue || prefixToUse || 'CODE'
+        : prefixToUse || inputValue || 'CODE';
+      const combined = buildGeneratedCode(source, generationMode);
 
       setFullText(combined);
+      if (generationMode === 'numbers') {
+        setInputValue(combined);
+      }
       addToHistory(combined);
 
       if (notify) {
@@ -158,13 +171,37 @@ export default function App() {
       }
       return combined;
     },
-    [activePrefix, addToHistory]
+    [activePrefix, addToHistory, generationMode, inputValue]
   );
 
   const handleSelectPrefix = (prefix) => {
     const cleanPrefix = formatCode(prefix);
     setActivePrefix(cleanPrefix);
-    generateNewCode(cleanPrefix, true);
+    const nextInput = generationMode === 'code'
+      ? buildCodeTemplate(cleanPrefix)
+      : buildNumbersCode(cleanPrefix);
+    const nextCode = buildGeneratedCode(nextInput, generationMode);
+    setInputValue(nextInput);
+    setFullText(nextCode);
+    addToHistory(nextCode);
+    setToast({
+      type: 'success',
+      message: `Generated: ${nextCode}`,
+    });
+  };
+
+  const handleGenerationModeChange = (nextMode) => {
+    setGenerationMode(nextMode);
+
+    const source = activePrefix || inputValue || 'CODE';
+    const nextInput = nextMode === 'code'
+      ? buildCodeTemplate(source)
+      : buildNumbersCode(source);
+    const nextCode = buildGeneratedCode(nextInput, nextMode);
+
+    setInputValue(nextInput);
+    setFullText(nextCode);
+    addToHistory(nextCode);
   };
 
   const handleEditPrefix = async (prefixId, newCodeValue, newNameValue, accessKey) => {
@@ -226,7 +263,11 @@ export default function App() {
 
         if (activePrefix === oldValue) {
           setActivePrefix(normalizedCode);
-          generateNewCode(normalizedCode, true);
+          const nextInput = generationMode === 'code'
+            ? buildCodeTemplate(normalizedCode)
+            : buildNumbersCode(normalizedCode);
+          setInputValue(nextInput);
+          setFullText(buildGeneratedCode(nextInput, generationMode));
         }
 
         setToast({
@@ -285,8 +326,13 @@ export default function App() {
           setActivePrefix(nextActive);
 
           if (nextActive) {
-            generateNewCode(nextActive, false);
+            const nextInput = generationMode === 'code'
+              ? buildCodeTemplate(nextActive)
+              : buildNumbersCode(nextActive);
+            setInputValue(nextInput);
+            setFullText(buildGeneratedCode(nextInput, generationMode));
           } else {
+            setInputValue('');
             setFullText("");
           }
         }
@@ -329,6 +375,7 @@ export default function App() {
 
   const handleSelectRecent = (code) => {
     const upper = code.toUpperCase();
+    setInputValue(upper);
     setFullText(upper);
 
     setToast({
@@ -350,13 +397,20 @@ export default function App() {
               onAddPrefix={handleAddPrefix}
               onEditPrefix={handleEditPrefix}
               onDeletePrefix={handleDeletePrefix}
-              onPrefixInputChange={(newVal) => setActivePrefix(formatCode(newVal))}
             />
             <CodeInputSection
               fullText={fullText}
+              inputValue={inputValue}
+              generationMode={generationMode}
+              onGenerationModeChange={handleGenerationModeChange}
               onFullTextChange={(val) => {
-                setFullText(val);
-                addToHistory(val);
+                const cleanValue = val.toUpperCase();
+                setInputValue(cleanValue);
+                const generatedValue = generationMode === 'code'
+                  ? buildGeneratedCode(cleanValue, generationMode)
+                  : cleanValue;
+                setFullText(generatedValue);
+                addToHistory(generatedValue);
               }}
               onGenerateNew={() => generateNewCode(activePrefix, true)}
               onCopyText={handleCopyText}

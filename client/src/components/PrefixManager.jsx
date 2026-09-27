@@ -23,7 +23,6 @@ export default function PrefixManager({
   onAddPrefix,
   onEditPrefix,
   onDeletePrefix,
-  onPrefixInputChange,
 }) {
   const [newPrefixNameInput, setNewPrefixNameInput] = useState('');
   const [newPrefixCodeInput, setNewPrefixCodeInput] = useState('');
@@ -366,26 +365,6 @@ export default function PrefixManager({
           {errorMsg && <p className="text-rose-400 text-xs mt-2">{errorMsg}</p>}
         </form>
       )}
-
-      <div className="mb-5">
-        <label className="block text-xs font-medium text-zinc-400 mb-1.5">
-          Active Prefix (Type directly or click a button below):
-        </label>
-        <div className="relative">
-          <input
-            type="text"
-            value={activePrefix}
-            onChange={(e) => onPrefixInputChange(formatCode(e.target.value))}
-            placeholder="TYPE OR SELECT A PREFIX..."
-            className="w-full bg-zinc-900/90 border border-zinc-750 rounded-xl px-4 py-3 text-white text-base sm:text-lg font-mono font-bold tracking-wider uppercase focus:outline-none focus:border-[#00e676] focus:ring-2 focus:ring-[#00e676]/20 transition-all"
-          />
-          {activePrefix && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-[#00e676]/15 text-[#00e676] border border-[#00e676]/30">
-              ACTIVE
-            </span>
-          )}
-        </div>
-      </div>
 
       {editId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">

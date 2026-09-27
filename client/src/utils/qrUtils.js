@@ -34,8 +34,34 @@ export function formatCode(str) {
     .replace(/\s+/g, '');
 }
 
-export function buildGeneratedCode(prefixValue) {
+export function buildCodeTemplate(prefixValue) {
   const prefix = formatCode(prefixValue || 'CODE').trim();
+
+  if (/\[\d+\]/.test(prefix) || /\(\d+\)/.test(prefix)) {
+    return prefix;
+  }
+
+  const base = prefix
+    .replace(/-\d{10}$/, '')
+    .replace(/[-_]+$/, '');
+  return `${base}-[10]`;
+}
+
+export function buildNumbersCode(prefixValue) {
+  const prefix = formatCode(prefixValue || 'CODE').trim();
+  const base = prefix
+    .replace(/\[\d+\]/g, '')
+    .replace(/\(\d+\)/g, '')
+    .replace(/-\d{10}$/, '')
+    .replace(/[-_]+$/, '');
+
+  return `${base}-` + generateRandomDigits(10);
+}
+
+export function buildGeneratedCode(prefixValue, mode = 'code') {
+  const prefix = mode === 'numbers'
+    ? buildNumbersCode(prefixValue)
+    : buildCodeTemplate(prefixValue);
 
   if (!prefix) {
     return '';
