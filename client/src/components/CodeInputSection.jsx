@@ -16,10 +16,7 @@ export default function CodeInputSection({
   hasCopied,
 }) {
   const handleInputChange = (e) => {
-    const value = e.target.value.toUpperCase();
-
-    // Update input only.
-    // App.jsx will synchronize the QR with the exact full text.
+    const value = e.target.value.trim().toUpperCase();
     setInputValue(value);
   };
 
