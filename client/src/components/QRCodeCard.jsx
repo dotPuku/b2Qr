@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { QRCodeSVG, QRCodeCanvas } from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react';
 import { Download, Printer, QrCode } from 'lucide-react';
 
 export default function QRCodeCard({
@@ -31,7 +31,7 @@ export default function QRCodeCard({
       document.body.removeChild(link);
 
       onNotify?.({ type: 'success', message: `Downloaded ${filename}` });
-    } catch (err) {
+    } catch {
       onNotify?.({ type: 'error', message: 'Download failed' });
     }
   };
@@ -134,7 +134,7 @@ export default function QRCodeCard({
 
       <div className="mt-4 mb-5 w-full">
         <div className="text-xs text-zinc-400 mb-1">Encoded Content:</div>
-        <div className="bg-zinc-900 border border-zinc-750 px-3 py-2 rounded-xl font-mono text-sm sm:text-base font-bold text-[#00e676] tracking-wider break-all max-w-full">
+        <div className="bg-zinc-900 border border-zinc-700 px-3 py-2 rounded-xl font-mono text-sm sm:text-base font-bold text-[#00e676] tracking-wider break-all max-w-full">
           {hasValue ? value : 'WAITING FOR INPUT...'}
         </div>
       </div>

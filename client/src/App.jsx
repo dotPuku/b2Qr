@@ -350,7 +350,6 @@ export default function App() {
               onAddPrefix={handleAddPrefix}
               onEditPrefix={handleEditPrefix}
               onDeletePrefix={handleDeletePrefix}
-              onPrefixInputChange={(newVal) => setActivePrefix(formatCode(newVal))}
             />
             <CodeInputSection
               fullText={fullText}
