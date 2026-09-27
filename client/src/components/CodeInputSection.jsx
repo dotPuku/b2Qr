@@ -43,7 +43,7 @@ export default function CodeInputSection({
           <button
             type="button"
             onClick={onCopyText}
-            disabled={!inputValue}
+            disabled={!inputValue.trim()}
             title="Copy text to clipboard"
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-xs font-semibold border border-zinc-700 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
