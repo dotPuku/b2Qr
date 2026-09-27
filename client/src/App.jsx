@@ -364,7 +364,7 @@ export default function App() {
                 setInputValue(val);
               }}
               onGenerateNew={() => generateNewCode(inputValue, true)}
-              isGenerateDisabled={!inputValue.trim() || !activePrefix}
+              isGenerateDisabled={!inputValue.trim() && !activePrefix}
               onCopyText={handleCopyText}
               hasCopied={hasCopied}
             />

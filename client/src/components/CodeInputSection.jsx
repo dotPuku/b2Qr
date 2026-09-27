@@ -69,7 +69,7 @@ export default function CodeInputSection({
           className="flex-1 flex items-center justify-center gap-2.5 py-3.5 px-6 rounded-xl font-bold text-base bg-[#00e676] hover:bg-[#00c864] text-zinc-950 transition-all duration-200 transform active:scale-[0.98] shadow-[0_4px_20px_rgba(0,230,118,0.35)] hover:shadow-[0_6px_25px_rgba(0,230,118,0.5)] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-[#00e676] disabled:hover:shadow-[0_4px_20px_rgba(0,230,118,0.35)]"
         >
           <RefreshCw className="w-5 h-5 transition-transform hover:rotate-180 duration-500" />
-          <span>Generate New QR Code</span>
+          <span>Generate</span>
           <Sparkles className="w-4 h-4 text-zinc-900" />
         </button>
       </div>
