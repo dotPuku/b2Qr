@@ -234,10 +234,15 @@ export default function App() {
         );
 
         if (activePrefix === oldValue) {
-          newFullCode = buildGeneratedCode(normalizedCode)
+          const newFullCode = buildGeneratedCode(normalizedCode);
           setActivePrefix(normalizedCode);
           setInputValue(newFullCode);
-          generateNewCode(normalizedCode, true);
+          setFullText(newFullCode);
+          addToHistory(newFullCode);
+          setToast({
+            type: 'success',
+            message: `Generated: ${newFullCode}`,
+          });
         }
 
         setToast({
