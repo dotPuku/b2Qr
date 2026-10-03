@@ -40,7 +40,7 @@ export default function CodeInputSection({
           type="text"
           value={inputValue}
           onChange={handleInputChange}
-          placeholder="e.g. BB-[10] OR BB-6405034417"
+          placeholder="e.g. BB-6405034417"
           className="
             w-full
             bg-zinc-950/90
