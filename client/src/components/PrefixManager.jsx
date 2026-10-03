@@ -395,7 +395,7 @@ export default function PrefixManager({
                   type="text"
                   value={editNameDraft}
                   onChange={(e) => {
-                    setEditNameDraft(e.target.value);
+                    setEditNameDraft(e.target.value.toUpperCase());
                     setEditError('');
                   }}
                   placeholder="PREFIX NAME"
